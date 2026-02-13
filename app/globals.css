@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* --- Animaciones para los íconos del Dashboard 🔧 --- */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0px); }
+}
+@keyframes wiggle {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-6deg); }
+  75% { transform: rotate(6deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.icon-float {
+  animation: float 6s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform;
+}
+
+/* Al hacer hover sobre la tarjeta (ya usa 'group') aceleramos el float y aplicamos un pequeño wiggle */
+.group:hover .icon-float {
+  animation: float 2s ease-in-out infinite, wiggle 600ms ease-in-out;
+}
+
+/* Añadimos un efecto de glow y transición al svg cuando se hace hover sobre la tarjeta */
+.group:hover .icon-float svg {
+  filter: drop-shadow(0 8px 20px rgba(233,87,110,0.25)) saturate(1.1);
+  transition: filter 0.25s ease, transform 0.2s ease;
+}
+
+/* --- Fondo con patrón de huellas sutiles --- */
+.paws-bg {
+  /* Usamos un SVG inline muy pequeño en data-uri con opacidad baja para que sea sutil */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='128' height='128' viewBox='0 0 128 128'><g fill='%23E9576E' opacity='0.06'><circle cx='28' cy='34' r='8'/><circle cx='44' cy='24' r='6'/><circle cx='12' cy='24' r='6'/><circle cx='60' cy='24' r='6'/><ellipse cx='40' cy='74' rx='20' ry='22'/></g></svg>");
+  background-repeat: repeat;
+  background-size: 220px;
+  background-position: center -40px;
+}
+
+/* Ajuste para pantallas pequeñas */
+@media (max-width: 640px) {
+  .paws-bg { background-size: 160px; background-position: center -20px; }
+}
+
+/* Reducimos el patrón si el usuario prefiere menos movimiento/efectos visuales */
+@media (prefers-reduced-motion: reduce) {
+  .paws-bg { background-image: none; }
+}
+
+/* --- Efectos decorativos y micro-interacciones para la página de login --- */
+.tilt-wrapper {
+  perspective: 900px;
+  position: relative;
+}
+.tilt-wrapper .tilt-card {
+  transform: perspective(900px) rotateX(var(--rx,0)) rotateY(var(--ry,0));
+  transition: transform 250ms cubic-bezier(.2,.9,.3,1);
+  will-change: transform;
+}
+.tilt-wrapper:hover .tilt-card {
+  box-shadow: 0 24px 60px rgba(0,0,0,0.12);
+}
+
+.floating-paw {
+  position: absolute;
+  /* let SVG width/height control size; provide max for safety */
+  width: auto;
+  height: auto;
+  max-width: 84px;
+  opacity: 0.12;
+  animation: float 6s ease-in-out infinite;
+  transform-origin: center;
+}
+.floating-paw.paw-1 { left: -20px; top: -20px; animation-duration: 7s; max-width: 72px; }
+.floating-paw.paw-2 { right: -24px; top: 8%; animation-duration: 5s; max-width: 56px; }
+.floating-paw.paw-3 { left: 50%; bottom: -24px; transform: translateX(-50%); animation-duration: 8s; max-width: 88px; }
+
+
+.input-icon svg { width: 18px; height: 18px; }
+
+.eye-toggle {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.eye-toggle:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(100,194,206,0.12);
+  border-radius: 8px;
+}
+
+.paw-emoji { display: inline-block; transform: translateX(-6px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .tilt-wrapper .tilt-card { transition: none; transform: none; }
+  .floating-paw { animation: none; }
+}
+
+/* Reglas específicas para separar las tarjetas del Dashboard */
+.dashboard-cards {
+  row-gap: 6rem; /* separación vertical más amplia */
+  column-gap: 5.5rem; /* separación horizontal consistente */
+}
+.dashboard-cards > * {
+  margin-top: 3rem; /* desplaza cada tarjeta hacia abajo */
+}
+
+@media (max-width: 640px) {
+  .dashboard-cards { row-gap: 3.5rem; column-gap: 2.25rem; }
+  .dashboard-cards > * { margin-top: 1.5rem; }
+}
+
+
