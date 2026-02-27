@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
 import { createPatient } from '../lib/patients';
 import api from '../lib/api';
@@ -40,6 +40,16 @@ export default function RegistroPaciente() {
     const [patientExists, setPatientExists] = useState(false);
     const [checkingPatient, setCheckingPatient] = useState(false);
     const [checkTimer, setCheckTimer] = useState(null);
+
+    useEffect(() => {
+        if (!successMessage) return;
+
+        const timer = setTimeout(() => {
+            setSuccessMessage('');
+        }, 2000);
+
+        return () => clearTimeout(timer);
+    }, [successMessage]);
 
 
     const handleChange = (e) => {
