@@ -3,18 +3,20 @@ import { NextResponse } from 'next/server';
 export async function GET(request) {
   try {
     const EXTERNAL_API = process.env.EXTERNAL_API_BASE || process.env.NEXT_PUBLIC_EXTERNAL_API_BASE;
-    console.log('[historial_medico GET] EXTERNAL_API:', EXTERNAL_API);
+    console.log('[citas GET] EXTERNAL_API:', EXTERNAL_API);
     
     if (!EXTERNAL_API) {
-      console.error('[historial_medico GET] EXTERNAL_API_BASE no configurado');
+      console.error('[citas GET] EXTERNAL_API_BASE no configurado');
       return NextResponse.json({ success: false, error: 'EXTERNAL_API_BASE no configurado' }, { status: 400 });
     }
 
+    // Extraer query params (puede ser /list, /fecha/2026-02-27, /horarios/2026-02-28, /propietario/123, etc)
     const url = new URL(request.url);
-    const queryString = url.search;
-    
-    const apiUrl = `${EXTERNAL_API}/historial-medico${queryString}`;
-    console.log('[historial_medico GET] Calling:', apiUrl);
+    const pathname = url.pathname.replace('/api/citas', '');
+    const queryParams = url.search;
+
+    const apiUrl = `${EXTERNAL_API}/citas${pathname}${queryParams}`;
+    console.log('[citas GET] Calling:', apiUrl);
     
     const res = await fetch(apiUrl, {
       method: 'GET',
@@ -22,29 +24,28 @@ export async function GET(request) {
       cache: 'no-store'
     });
 
-    console.log('[historial_medico GET] Response status:', res.status);
+    console.log('[citas GET] Response status:', res.status);
     const data = await res.json();
     return NextResponse.json(data, { status: res.status });
   } catch (err) {
-    console.error('Error proxying historial_medico GET:', err?.message || err);
+    console.error('Error proxying citas GET:', err?.message || err);
     return NextResponse.json({ success: false, error: 'Error del servidor', details: err?.message }, { status: 500 });
   }
 }
 
-
 export async function POST(request) {
   try {
     const EXTERNAL_API = process.env.EXTERNAL_API_BASE || process.env.NEXT_PUBLIC_EXTERNAL_API_BASE;
-    console.log('[historial_medico POST] EXTERNAL_API:', EXTERNAL_API);
+    console.log('[citas POST] EXTERNAL_API:', EXTERNAL_API);
     
     if (!EXTERNAL_API) {
-      console.error('[historial_medico POST] EXTERNAL_API_BASE no configurado');
+      console.error('[citas POST] EXTERNAL_API_BASE no configurado');
       return NextResponse.json({ success: false, error: 'EXTERNAL_API_BASE no configurado' }, { status: 400 });
     }
 
     const body = await request.json();
-    const apiUrl = `${EXTERNAL_API}/historial-medico`;
-    console.log('[historial_medico POST] Calling:', apiUrl);
+    const apiUrl = `${EXTERNAL_API}/citas`;
+    console.log('[citas POST] Calling:', apiUrl);
 
     const res = await fetch(apiUrl, {
       method: 'POST',
@@ -52,11 +53,11 @@ export async function POST(request) {
       body: JSON.stringify(body)
     });
 
-    console.log('[historial_medico POST] Response status:', res.status);
+    console.log('[citas POST] Response status:', res.status);
     const data = await res.json();
     return NextResponse.json(data, { status: res.status });
   } catch (err) {
-    console.error('Error proxying historial_medico POST:', err?.message || err);
+    console.error('Error proxying citas POST:', err?.message || err);
     return NextResponse.json({ success: false, error: 'Error del servidor', details: err?.message }, { status: 500 });
   }
 }
@@ -64,43 +65,35 @@ export async function POST(request) {
 export async function PUT(request) {
   try {
     const EXTERNAL_API = process.env.EXTERNAL_API_BASE || process.env.NEXT_PUBLIC_EXTERNAL_API_BASE;
-    console.log('[historial_medico PUT] EXTERNAL_API:', EXTERNAL_API);
+    console.log('[citas PUT] EXTERNAL_API:', EXTERNAL_API);
     
     if (!EXTERNAL_API) {
-      console.error('[historial_medico PUT] EXTERNAL_API_BASE no configurado');
+      console.error('[citas PUT] EXTERNAL_API_BASE no configurado');
       return NextResponse.json({ success: false, error: 'EXTERNAL_API_BASE no configurado' }, { status: 400 });
     }
 
-    let body;
-    try {
-      body = await request.json();
-    } catch (e) {
-      console.error('[historial_medico PUT] Errore parensead JSON:', e.message);
-      return NextResponse.json({ success: false, error: 'JSON inválido en el request' }, { status: 400 });
-    }
-
-    const { id, ...updateData } = body || {};
-
+    const body = await request.json();
+    const url = new URL(request.url);
+    const id = url.searchParams.get('id');
+    
     if (!id) {
-      console.error('[historial_medico PUT] No ID provided');
-      return NextResponse.json({ success: false, error: 'El ID es obligatorio' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'ID de cita requerido' }, { status: 400 });
     }
 
-    const apiUrl = `${EXTERNAL_API}/historial-medico/${id}`;
-    console.log('[historial_medico PUT] Calling:', apiUrl, 'with data:', updateData);
+    const apiUrl = `${EXTERNAL_API}/citas/${id}`;
+    console.log('[citas PUT] Calling:', apiUrl);
 
     const res = await fetch(apiUrl, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updateData)
+      body: JSON.stringify(body)
     });
 
-    console.log('[historial_medico PUT] Response status:', res.status);
+    console.log('[citas PUT] Response status:', res.status);
     const data = await res.json();
-    console.log('[historial_medico PUT] Response data:', data);
     return NextResponse.json(data, { status: res.status });
   } catch (err) {
-    console.error('Error proxying historial_medico PUT:', err?.message || err);
+    console.error('Error proxying citas PUT:', err?.message || err);
     return NextResponse.json({ success: false, error: 'Error del servidor', details: err?.message }, { status: 500 });
   }
 }
@@ -108,33 +101,33 @@ export async function PUT(request) {
 export async function DELETE(request) {
   try {
     const EXTERNAL_API = process.env.EXTERNAL_API_BASE || process.env.NEXT_PUBLIC_EXTERNAL_API_BASE;
-    console.log('[historial_medico DELETE] EXTERNAL_API:', EXTERNAL_API);
+    console.log('[citas DELETE] EXTERNAL_API:', EXTERNAL_API);
     
     if (!EXTERNAL_API) {
-      console.error('[historial_medico DELETE] EXTERNAL_API_BASE no configurado');
+      console.error('[citas DELETE] EXTERNAL_API_BASE no configurado');
       return NextResponse.json({ success: false, error: 'EXTERNAL_API_BASE no configurado' }, { status: 400 });
     }
 
-    const body = await request.json();
-    const { id } = body || {};
-
+    const url = new URL(request.url);
+    const id = url.searchParams.get('id');
+    
     if (!id) {
-      return NextResponse.json({ success: false, error: 'El ID es obligatorio' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'ID de cita requerido' }, { status: 400 });
     }
 
-    const apiUrl = `${EXTERNAL_API}/historial-medico/${id}`;
-    console.log('[historial_medico DELETE] Calling:', apiUrl);
+    const apiUrl = `${EXTERNAL_API}/citas/${id}`;
+    console.log('[citas DELETE] Calling:', apiUrl);
 
     const res = await fetch(apiUrl, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' }
     });
 
-    console.log('[historial_medico DELETE] Response status:', res.status);
+    console.log('[citas DELETE] Response status:', res.status);
     const data = await res.json();
     return NextResponse.json(data, { status: res.status });
   } catch (err) {
-    console.error('Error proxying historial_medico DELETE:', err?.message || err);
+    console.error('Error proxying citas DELETE:', err?.message || err);
     return NextResponse.json({ success: false, error: 'Error del servidor', details: err?.message }, { status: 500 });
   }
 }

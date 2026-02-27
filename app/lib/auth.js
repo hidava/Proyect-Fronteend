@@ -16,23 +16,24 @@ const devLog = (...args) => { if (isDev) console.warn(...args); };
  * @throws {Error} Si el login falla o no se recibe el token.
  */
 export async function loginUser(email, password) { // Función asíncrona para iniciar sesión.
-    // RUTA DEFINITIVA: Coincide con API_PREFIX=/api/v1 y router montado en /auth
-    const AUTH_ENDPOINT = '/api/v1/auth/login'; // Define la ruta específica para la API de login.
+    // Usar el proxy de Next.js en lugar de llamar directamente a DigitalOcean (para evitar CORS)
+    const AUTH_ENDPOINT = '/api/v1/auth/login'; // Proxy en Next.js que redirige a la API en DigitalOcean
 
     try {
-        // Usamos el cliente `api` con baseURL configurada
-        const response = await api.post(AUTH_ENDPOINT,
-            { // ARGUMENTO 2: DATA (Body) - Envía el email y password.
-                email,
-                password
-            }
-        );
+        // Hacemos petición directa con fetch (no usa axios, evita problemas con baseURL)
+        const response = await fetch(AUTH_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
 
         // EXTRAEMOS LAS PROPIEDADES DE FORMA ROBUSTA PARA ACEPTAR VARIOS FORMATOS DE RESPUESTA
         // El backend puede responder { token, user } o { data: { token, user } }
         // Comprobamos ambas ubicaciones para evitar errores por cambios de formato.
-        const token = response.data?.token || response.data?.data?.token;
-        const userInfo = response.data?.user || response.data?.data?.user; 
+        const token = data?.token || data?.data?.token;
+        const userInfo = data?.user || data?.data?.user; 
 
         if (token && userInfo) {
             // Devolvemos ambos: el token y la información del usuario
@@ -43,31 +44,9 @@ export async function loginUser(email, password) { // Función asíncrona para i
         throw new Error('No se recibió token y/o información del usuario del servidor (Respuesta 200 sin datos).');
 
     } catch (error) {
-        if (axios.isAxiosError(error) && error.response) {
-            const status = error.response.status;
-            let serverMsg = error.response.statusText;
-
-            if (error.response.data) {
-                if (error.response.data.errors && Array.isArray(error.response.data.errors) && error.response.data.errors.length > 0) {
-                    serverMsg = error.response.data.errors.map(e => e.msg).join(', ');
-                }
-                else if (error.response.data.message) {
-                    serverMsg = error.response.data.message;
-                }
-            }
-
-            devLog('Login error response:', status, error.response.data);
-            
-            // Si es un error 401, damos un mensaje más amigable
-            if (status === 401) {
-                throw new Error("Credenciales inválidas. Por favor, verifica tu correo y contraseña.");
-            }
-            
-            throw new Error(serverMsg);
-
-        } else if (error.request) {
-            devLog('No response from server:', error.request);
-            throw new Error('No hay respuesta del servidor. ¿Está corriendo en la dirección ' + (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000') + '?');
+        if (error instanceof TypeError) {
+            devLog('No response from server:', error.message);
+            throw new Error('No hay respuesta del servidor. Verifica que la API está disponible.');
         } else {
             devLog('Error general:', error.message);
             throw new Error(error.message);
@@ -84,45 +63,30 @@ export async function loginUser(email, password) { // Función asíncrona para i
  * @throws {Error} Si el registro falla.
  */
 export async function registerUser({ nombre, apellido, email, cedula, telefono, direccion, password }) {
-    // RUTA DEFINITIVA: /api/v1/auth/register
+    // Usar el proxy de Next.js en lugar de llamar directamente a DigitalOcean
     const AUTH_ENDPOINT = '/api/v1/auth/register';
 
     try {
-        const response = await api.post(AUTH_ENDPOINT, { nombre, apellido, cedula, email, telefono, direccion, password });
+        const response = await fetch(AUTH_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre, apellido, cedula, email, telefono, direccion, password })
+        });
 
-        if (response.data.success || response.status === 201 || response.status === 200) {
-            return response.data;
+        const data = await response.json();
+
+        if (data.success || response.status === 201 || response.status === 200) {
+            return data;
         }
 
         throw new Error('Registro fallido sin mensaje de error claro (respuesta 200/201 sin propiedad success).');
 
     } catch (error) {
-        if (axios.isAxiosError(error) && error.response) {
-            const status = error.response.status;
-
-            if (status === 400 && error.response.data?.errors) {
-                if (process.env.NODE_ENV !== 'production') console.error('❌ ERRORES DE VALIDACIÓN DETALLADOS (400):', error.response.data.errors);
-            }
-
-            let serverMsg = error.response.statusText;
-
-            if (error.response.data) {
-                if (error.response.data.errors && Array.isArray(error.response.data.errors) && error.response.data.errors.length > 0) {
-                    serverMsg = error.response.data.errors.map(e => e.msg).join(', ');
-                }
-                else if (error.response.data.message) {
-                    serverMsg = error.response.data.message;
-                }
-            }
-
-            devLog('Registro error response:', status, error.response.data);
-            throw new Error(serverMsg);
-
-        } else if (error.request) {
-            devLog('No response from server:', error.request);
-            throw new Error('No hay respuesta del servidor. ¿Está corriendo?');
+        if (error instanceof TypeError) {
+            devLog('No response from server:', error.message);
+            throw new Error('No hay respuesta del servidor. Verifica que la API está disponible.');
         } else {
-            devLog('Axios error:', error.message);
+            devLog('Error general:', error.message);
             throw new Error(error.message);
         }
     }

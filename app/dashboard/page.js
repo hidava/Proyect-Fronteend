@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 // Se mantienen las funciones nativas para el manejo de cookies, ya que las librerías externas causan problemas en este entorno.
 
@@ -31,10 +32,11 @@ const deleteNativeCookie = (name) => {
 };
 
 // === PALETA DE COLORES REFINADA ===
-// 1. Rosa Intenso (Principal/Branding): #E9576E
-// 2. Turquesa (Acento/Botones): #64C2CE
-// 3. Amarillo Pálido (Fondo de Página): #FFEC99 
-// 4. Blanco/Crema (Contenedores/Cards): #F8F7F5
+// 1. Morado Pastel (Principal/Branding): #C9A8D4
+// 2. Verde Menta (Acento/Botones): #9BCDB0
+// 3. Amarillo Pastel (Fondo de Página): #FFF9E6
+// 4. Coral Vívido (Acento Vibrante): #FF6B6B 
+// 5. Blanco/Crema (Contenedores/Cards): #F8F7F5
 
 // --- Componentes SVG Silhouette (Sin cambios) ---
 
@@ -68,65 +70,145 @@ const PillSilhouette = (props) => (
     </svg>
 );
 
+const CalendarSilhouette = (props) => (
+    <svg className="w-16 h-16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+        <path fill="currentColor" d="M19 4H18V2H16V4H8V2H6V4H5C3.89 4 3 4.9 3 6V20C3 21.1 3.89 22 5 22H19C20.1 22 21 21.1 21 20V6C21 4.9 20.1 4 19 4ZM19 20H5V10H19V20ZM19 8H5V6H19V8ZM7 12H12V17H7V12Z"/>
+    </svg>
+);
+
 const iconMap = {
     "Gestión Propietarios": UserGroupSilhouette,
     "Ficha Médica": HeartCrossSilhouette,
     "Crear Pacientes": PawSilhouette,
     "Vacunas": DropSilhouette,
     "Desparasitantes": PillSilhouette,
+    "Citas": CalendarSilhouette,
 };
 
 
-// Componente individual de la tarjeta/opción circular (Sin cambios)
+// Componente individual de la tarjeta/opción (estilo dashboard mejorado)
 const DashboardCard = ({ title, icon, color, description, link }) => {
-    
     const IconComponent = iconMap[title];
 
     const colorClasses = {
-        "rose-intense": { // Rosa Intenso: #E9576E
-            mainBg: "bg-[#E9576E]",
-            hoverShadow: "hover:shadow-2xl hover:shadow-[#E9576E]/60",
-            ring: "focus:ring-[#E9576E]",
+        "rose-intense": { // Morado Pastel: #C9A8D4
+            accent: "bg-[#C9A8D4]",
+            accentHex: "#C9A8D4",
+            ring: "focus:ring-[#C9A8D4]",
+            bgGradient: "from-[#C9A8D4]/30 via-[#C9A8D4]/15 to-white",
+            iconBg: "bg-gradient-to-br from-[#C9A8D4]/40 to-[#C9A8D4]/20",
             iconColor: "text-white",
-            titleColor: "text-[#E9576E]",
+            badge: "text-white",
+            glow: "group-hover:shadow-[0_0_50px_rgba(201,168,212,0.6),0_20px_70px_rgba(201,168,212,0.4)]",
         },
-        "turquoise-vibrant": { // Turquesa: #64C2CE
-            mainBg: "bg-[#64C2CE]",
-            hoverShadow: "hover:shadow-2xl hover:shadow-[#64C2CE]/60",
-            ring: "focus:ring-[#64C2CE]",
+        "turquoise-vibrant": { // Verde Menta: #9BCDB0
+            accent: "bg-[#9BCDB0]",
+            accentHex: "#9BCDB0",
+            ring: "focus:ring-[#9BCDB0]",
+            bgGradient: "from-[#9BCDB0]/30 via-[#9BCDB0]/15 to-white",
+            iconBg: "bg-gradient-to-br from-[#9BCDB0]/40 to-[#9BCDB0]/20",
             iconColor: "text-white",
-            titleColor: "text-[#64C2CE]",
+            badge: "text-white",
+            glow: "group-hover:shadow-[0_0_50px_rgba(155,205,176,0.6),0_20px_70px_rgba(155,205,176,0.4)]",
+        },
+        "coral-vivid": { // Coral Vívido: #FF6B6B
+            accent: "bg-[#FF6B6B]",
+            accentHex: "#FF6B6B",
+            ring: "focus:ring-[#FF6B6B]",
+            bgGradient: "from-[#FF6B6B]/30 via-[#FF6B6B]/15 to-white",
+            iconBg: "bg-gradient-to-br from-[#FF6B6B]/40 to-[#FF6B6B]/20",
+            iconColor: "text-white",
+            badge: "text-white",
+            glow: "group-hover:shadow-[0_0_50px_rgba(255,107,107,0.6),0_20px_70px_rgba(255,107,107,0.4)]",
         },
     };
 
     const currentColors = colorClasses[color] || colorClasses["rose-intense"]; 
 
     return (
-        <div className="flex flex-col items-center text-center p-2 mt-8">
-            <Link href={link}
-                className={`
-                    group w-48 h-48 sm:w-64 sm:h-64 md:w-72 md:h-72 lg:w-72 lg:h-72 xl:w-80 xl:h-80
-                    ${currentColors.mainBg} rounded-full flex items-center justify-center p-4 
-                    transition-all duration-300 ease-in-out 
-                    transform hover:scale-[1.05] hover:rotate-1
-                    shadow-xl
-                    hover:shadow-3xl 
-                    ${currentColors.hoverShadow} 
-                    focus:outline-none focus:ring-4 ${currentColors.ring} mb-4 z-10
-                `}
-            >
-                <div className={`transition duration-300 ${currentColors.iconColor} icon-float 
-                                group-hover:scale-[1.2]`}> 
-                    {IconComponent ? <IconComponent className="w-1/2 h-1/2 transform transition-transform duration-500 group-hover:scale-[1.18] group-hover:rotate-2" /> : <div className="text-5xl text-white">{icon}</div>}
-                </div>
-            </Link>
+        <Link
+            href={link}
+            className={`
+                group relative flex flex-col items-center text-center
+                w-full aspect-square rounded-full 
+                bg-gradient-to-br ${currentColors.bgGradient}
+                shadow-[0_10px_40px_rgba(0,0,0,0.15),0_0_0_1px_rgba(0,0,0,0.05)]
+                transition-all duration-600 ease-out
+                hover:-translate-y-4 hover:scale-110
+                ${currentColors.glow}
+                focus:outline-none focus:ring-4 ${currentColors.ring}
+                overflow-visible
+                p-4 sm:p-6
+            `}
+        >
+            {/* Anillo decorativo animado */}
+            <div className={`
+                absolute inset-0 rounded-full ${currentColors.accent}
+                opacity-0 scale-90 blur-md
+                group-hover:opacity-40 group-hover:scale-110 group-hover:blur-xl
+                transition-all duration-600
+            `} />
             
-            <h3 className={`text-xl sm:text-2xl font-extrabold text-gray-800 mt-5 mb-2 
-                           transition duration-300 group-hover:${currentColors.titleColor} group-hover:scale-[1.05]`}>
-                {title}
-            </h3>
-            <p className="text-gray-600 text-sm max-w-[200px]">{description}</p>
-        </div>
+            {/* Gradiente de fondo decorativo */}
+            <div 
+                className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-500"
+                style={{ 
+                    background: `radial-gradient(circle at center, ${currentColors.accentHex}, transparent 70%)`
+                }}
+            />
+
+            <div className="relative z-10 flex flex-col items-center justify-center h-full w-full">
+                {/* Icono con animación mejorada */}
+                <div className={`
+                    inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full
+                    ${currentColors.accent}
+                    transform transition-all duration-600
+                    group-hover:scale-140 group-hover:rotate-[360deg]
+                    shadow-xl group-hover:shadow-2xl
+                    mb-2
+                `}>
+                    {IconComponent ? (
+                        <IconComponent className={`
+                            w-6 h-6 sm:w-7 sm:h-7 ${currentColors.iconColor}
+                            transition-all duration-600
+                            group-hover:scale-110
+                        `} />
+                    ) : (
+                        <div className={`text-xl sm:text-2xl font-bold ${currentColors.iconColor}`}>{icon}</div>
+                    )}
+                </div>
+
+                {/* Título con efecto */}
+                <h3 className={`
+                    text-xs sm:text-sm font-extrabold text-gray-900
+                    transition-all duration-300 
+                    group-hover:scale-110
+                    mb-1
+                `}>
+                    {title}
+                </h3>
+                
+                {/* Badge animado */}
+                <span className={`
+                    text-[8px] sm:text-[9px] font-bold uppercase tracking-wider 
+                    ${currentColors.accent} ${currentColors.badge}
+                    px-2 py-0.5 rounded-full
+                    opacity-90 group-hover:opacity-100
+                    transform transition-all duration-300
+                    group-hover:scale-125
+                    shadow-md
+                `}>
+                    Ver →
+                </span>
+            </div>
+
+            {/* Efecto de brillo giratorio */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/0 via-white/30 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 group-hover:animate-spin" style={{ animationDuration: '3s' }} />
+            
+            {/* Partículas de luz */}
+            <div className="absolute top-1/4 right-1/4 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-80 transition-all duration-500 blur-sm" />
+            <div className="absolute bottom-1/3 left-1/4 w-2 h-2 bg-white rounded-full opacity-0 group-hover:opacity-60 transition-all duration-700 blur-sm" />
+        </Link>
     );
 };
 
@@ -171,35 +253,42 @@ export default function Dashboard() {
             icon: "", 
             color: "rose-intense", 
             description: "Administra la información de contacto y cuentas de los dueños de mascotas.",
-            link: "/dashboard/propietarios"
+            link: "/GestionPropietarios"
         },
         {
             title: "Ficha Médica",
             icon: "", 
-            color: "turquoise-vibrant", 
+            color: "coral-vivid", 
             description: "Accede y actualiza el historial clínico completo de cada paciente.",
             link: "/dashboard/fichamedica"
         },
         {
             title: "Crear Pacientes",
             icon: "", 
-            color: "rose-intense", 
+            color: "turquoise-vibrant", 
             description: "Registra nuevas mascotas y asócialas a sus respectivos dueños.",
             link: "/dashboard/crearpacientes"
         },
         {
             title: "Vacunas",
             icon: "", 
-            color: "turquoise-vibrant", 
+            color: "coral-vivid", 
             description: "Programa, registra y da seguimiento a los esquemas de vacunación.",
-            link: "/dashboard/vacunas"
+            link: "/vacunas"
         },
         {
             title: "Desparasitantes",
             icon: "", 
             color: "rose-intense", 
             description: "Control de fechas de desparasitación interna y externa.",
-            link: "/dashboard/desparacitantes"
+            link: "/desparacitantes"
+        },
+        {
+            title: "Citas",
+            icon: "", 
+            color: "turquoise-vibrant", 
+            description: "Agenda y gestiona las citas de los pacientes.",
+            link: "/citas"
         },
     ];
 
@@ -219,48 +308,67 @@ export default function Dashboard() {
 
     // Ícono de identificación de marca (simplificado)
     const BrandingIcon = () => (
-        <svg className="w-8 h-8 mr-3 text-[#E9576E] shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg className="w-8 h-8 mr-3 text-[#FF6B6B] shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m-8-8h16"/>
         </svg>
     );
     
     return (
         // Contenedor principal (fondo provisto por el layout)
-        <div className="min-h-screen h-full w-full p-2 sm:p-4 lg:p-6 font-sans">
+        <div className="min-h-screen h-full w-full p-2 sm:p-4 lg:p-6 font-sans flex flex-col">
                         
+            {/* Imagen destacada */}
+            <div className="px-2 sm:px-3 lg:px-4 relative z-30">
+                <div className="w-full -mb-12 sm:-mb-16 -mt-12 sm:-mt-16 lg:-mt-20">
+                        <div className="group relative rounded-3xl bg-transparent">
+                            <div className="relative flex items-center justify-center">
+                                <div className="w-full h-40 sm:h-48">
+                                    <Image
+                                        src="/perro.png"
+                                        alt="Perro ilustracion"
+                                        width={520}
+                                        height={260}
+                                        priority
+                                        className="h-full w-full object-contain scale-x-[1.4] scale-y-[1.15] transition-transform duration-300 ease-out group-hover:scale-x-[1.45] group-hover:scale-y-[1.18] group-hover:-rotate-1"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                </div>
+            </div>
+
             {/* Encabezado flotante y estético (Fondo Blanco/Crema) */}
-            <header className="mb-6 p-4 sm:p-6 rounded-3xl bg-[#F8F7F5] shadow-2xl flex flex-col lg:flex-row justify-between items-center sticky top-4 z-20 border-b-8 border-[#E9576E]">
+            <header className="mb-4 p-2 sm:p-2 pt-8 sm:pt-10 rounded-3xl bg-[#F8F7F5] shadow-2xl flex flex-col lg:flex-row justify-between items-center sticky top-4 z-10 border-b-8 border-[#C9A8D4] gap-4">
                 
-                {/* Títulos y Bienvenida */}
-                <div className="text-center lg:text-left mb-4 lg:mb-0 flex-shrink-0">
-                    <h1 className="text-3xl sm:text-4xl font-extrabold text-[#E9576E] flex items-center justify-center lg:justify-start">
+                {/* Información del Usuario a la IZQUIERDA */}
+                <div className="text-left p-4 sm:p-5 rounded-xl bg-white border border-[#9BCDB0]/50 shadow-md flex-shrink-0 min-w-[200px] sm:min-w-[280px]">
+                    <p className="text-sm sm:text-base font-bold text-gray-700 uppercase mb-1">Bienvenido/a:</p>
+                    <p className="text-lg sm:text-xl font-bold text-[#C9A8D4] mb-2">{`${userInfo.nombre} ${userInfo.apellido}`}</p>
+                    <p className="text-sm sm:text-base font-medium text-gray-500">Cédula: {userInfo.cedula}</p>
+                </div>
+
+                {/* Títulos y Bienvenida en el CENTRO */}
+                <div className="text-center flex-grow -translate-x-16">
+                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#FF6B6B] flex items-center justify-center">
                         <BrandingIcon />
                         Patitas Felices
                     </h1>
-                    <p className="text-lg sm:text-xl font-medium text-[#64C2CE] ml-11 mt-1">
+                    <p className="text-lg sm:text-xl lg:text-2xl font-medium text-[#9BCDB0] mt-2">
                         Dashboard de Administración
                     </p>
                 </div>
 
-                {/* Información del Usuario y Botón Logout */}
-                <div className="flex items-center space-x-3 sm:space-x-5 flex-wrap justify-center lg:justify-end">
-                    {/* Chip de Usuario (USA LA INFORMACIÓN CARGADA) */}
-                    <div className="text-left p-3 rounded-xl bg-white border border-[#64C2CE]/50 shadow-md">
-                        <p className="text-xs font-bold text-gray-700 uppercase">Bienvenido/a:</p>
-                        <p className="text-sm font-bold text-[#E9576E]">{`${userInfo.nombre} ${userInfo.apellido}`}</p>
-                        <p className="text-xs font-medium text-gray-500 mt-1">Cédula: {userInfo.cedula}</p>
-                    </div>
-
-                    {/* Botón de Cerrar Sesión */}
+                {/* Botón de Cerrar Sesión a la DERECHA */}
+                <div className="flex-shrink-0 self-end">
                     <button
                         onClick={handleLogout}
-                        className="flex items-center px-5 py-2.5 text-base font-semibold rounded-full text-white mt-4 lg:mt-0 
-                                   bg-[#64C2CE] hover:bg-[#E9576E] 
-                                   focus:outline-none focus:ring-4 focus:ring-[#E9576E]/50 
+                        className="flex items-center px-4 py-2 text-sm font-semibold rounded-full text-white
+                                   bg-[#9BCDB0] hover:bg-[#204051] 
+                                   focus:outline-none focus:ring-4 focus:ring-[#204051]/50 
                                    transition duration-200 ease-in-out transform hover:scale-[1.02] shadow-lg"
                     >
                         {/* Ícono de salida en blanco */}
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                         </svg>
                         Cerrar Sesión
@@ -268,10 +376,10 @@ export default function Dashboard() {
                 </div>
             </header>
 
-            {/* Cuadrícula de Opciones Circulares (Mayor separación y tamaño) */}
-            <div className="pt-0 px-4 sm:px-6 lg:px-8"> 
-                <div className="max-w-6xl mx-auto">
-                    <div className="dashboard-cards grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-y-32 gap-x-28 md:gap-x-36 lg:gap-x-40 justify-items-center auto-rows-auto">
+            {/* Cuadrícula de Opciones */}
+            <div className="pt-0 px-4 sm:px-6 lg:px-8 mt-[4.25rem] sm:mt-[4.5rem]"> 
+                <div className="max-w-[1600px] mx-auto">
+                    <div className="dashboard-cards grid grid-cols-3 sm:grid-cols-6 gap-6 sm:gap-8 lg:gap-10 justify-items-center">
                         {cardsData.map((card) => (
                             <DashboardCard key={card.title} {...card} />
                         ))}
@@ -280,7 +388,7 @@ export default function Dashboard() {
             </div> 
 
             {/* Pie de página simple */}
-            <footer className="mt-16 text-center text-sm text-gray-500">
+            <footer className="mt-auto text-center text-sm text-gray-500 pt-12">
                 <p className="p-2 border-t border-gray-300/50">
                     © {new Date().getFullYear()} Patitas Felices - Desarrollado para la gestión veterinaria.
                 </p>

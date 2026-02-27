@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
 import { createPatient } from '../lib/patients';
+import api from '../lib/api';
 
 // Nota: ahora delegamos la validación y la creación al helper `createPatient`.
 
@@ -26,7 +27,7 @@ export default function RegistroPaciente() {
 
     // Ícono de marca reutilizado para mantener coherencia visual
     const BrandingIcon = () => (
-        <svg className="w-8 h-8 mr-3 text-[#E9576E] shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg className="w-8 h-8 mr-3 text-[#FF6B6B] shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m-8-8h16"/>
         </svg>
     );
@@ -67,18 +68,18 @@ export default function RegistroPaciente() {
             }
 
             setCheckingPatient(true);
-            // Llama a nuestro endpoint interno que comprueba duplicados
-            const res = await fetch('/api/pacientes/check', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nombre: nombreToCheck, propietarios_cedula: currentCedula })
+            // Llama al API externo que comprueba duplicados (si existe)
+            const res = await api.post('/api/v1/pacientes/check', {
+                nombre: nombreToCheck,
+                propietarios_cedula: currentCedula,
             });
-            const data = await res.json();
-            const exists = Boolean(data.exists);
+            const exists = Boolean(res?.data?.exists);
             setPatientExists(exists);
             return exists;
         } catch (e) {
-            if (process.env.NODE_ENV !== 'production') console.warn('Error comprobando paciente:', e);
+            if (e?.response?.status !== 404 && process.env.NODE_ENV !== 'production') {
+                console.warn('Error comprobando paciente:', e);
+            }
             setPatientExists(false);
             return false;
         } finally {
@@ -127,26 +128,27 @@ export default function RegistroPaciente() {
     return (
         <div className="min-h-screen w-full p-6 sm:p-10 lg:p-16 font-sans">
 
-            {/* Encabezado similar al dashboard */}
-            <header className="mb-12 p-4 sm:p-6 rounded-3xl bg-[#F8F7F5] shadow-2xl flex flex-col sm:flex-row justify-between items-center border-b-8 border-[#E9576E]">
-                <div className="flex items-center w-full sm:w-auto">
-                    <BrandingIcon />
-                    <div className="ml-2 text-left">
-                        <h1 className="text-3xl font-extrabold text-[#E9576E]">Registro de Pacientes</h1>
-                        <p className="text-sm text-[#64C2CE] mt-1">Formulario para registrar nuevas mascotas</p>
-                    </div>
-                </div>
-
-                <div className="mt-4 sm:mt-0">
-                    <a href="/dashboard" className="inline-flex items-center px-4 py-2 rounded-full bg-[#64C2CE] text-white font-semibold hover:bg-gradient-to-r hover:from-[#64C2CE] hover:to-[#E9576E] transform hover:scale-110 hover:shadow-lg transition-transform duration-200 ease-in-out">Volver al Dashboard</a>
-                </div>  
-            </header>
-
-            <main className="max-w-4xl mx-auto">
-                <div className="bg-white shadow-2xl rounded-xl p-8">
-                    <div>
-                        <h2 className="mt-2 text-center text-4xl font-extrabold text-[#E9576E]">Registro de Nuevo Paciente</h2>
-                        <p className="mt-2 text-center text-sm text-gray-600">Complete los datos de la mascota y del propietario.</p>
+            <main className="max-w-6xl w-full mx-auto">
+                <div className="relative bg-[#F8F7F5]/85 backdrop-blur-sm shadow-2xl rounded-3xl px-4 py-2 sm:px-6 sm:py-3 border border-[#C9A8D4]/40 overflow-hidden -mt-[44px]">
+                    <div className="absolute -right-24 -top-24 h-48 w-48 rounded-full bg-[#C9A8D4]/25 blur-2xl" />
+                    <div className="absolute -left-20 -bottom-24 h-56 w-56 rounded-full bg-[#9BCDB0]/30 blur-2xl" />
+                    <div className="relative">
+                        <div className="flex flex-col gap-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div className="flex items-center">
+                                    <BrandingIcon />
+                                    <div className="ml-2 text-left">
+                                        <h1 className="text-3xl font-extrabold text-[#FF6B6B]">Registro de Pacientes</h1>
+                                        <p className="text-sm text-[#9BCDB0] mt-1">Formulario para registrar nuevas mascotas</p>
+                                        <p className="mt-1 text-sm text-gray-600">Complete los datos de la mascota y del propietario.</p>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                                    <a href="/dashboard" className="inline-flex items-center px-4 py-2 rounded-full bg-[#C9A8D4] text-white font-semibold hover:bg-gradient-to-r hover:from-[#C9A8D4] hover:to-[#FF6B6B] transform hover:scale-110 hover:shadow-lg transition-transform duration-200 ease-in-out">Volver al Dashboard</a>
+                                </div>
+                            </div>
+                            <div />
+                        </div>
                     </div>
                     {/* Muestra mensaje de éxito */}
                     {successMessage && ( 
@@ -162,9 +164,9 @@ export default function RegistroPaciente() {
                         </div>
                     )}
 
-                    <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <h3 className="md:col-span-2 text-lg font-semibold text-[#E9576E] border-b pb-2">Datos de la Mascota</h3>
+                    <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <h3 className="lg:col-span-3 text-lg font-semibold text-[#FF6B6B] border-b pb-2">Datos de la Mascota</h3>
 
                             {/* 1. NOMBRE MASCOTA */}
                             <div>
@@ -176,16 +178,14 @@ export default function RegistroPaciente() {
                                     required
                                     value={formData.nombreMascota}
                                     onChange={handleChange}
-                                    className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#64C2CE] focus:border-[#64C2CE] sm:text-sm"
+                                    className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#9BCDB0] focus:border-[#9BCDB0] sm:text-sm"
                                     placeholder="Nombre de la mascota"
                                 />
                                 {checkingPatient ? (
                                     <p className="text-xs text-gray-500 mt-1">Comprobando existencia...</p>
                                 ) : patientExists ? (
                                     <p className="text-xs text-red-600 mt-1">Paciente ya registrado para este propietario</p>
-                                ) : (
-                                    <p className="text-xs text-green-600 mt-1">Nombre disponible</p>
-                                )}
+                                ) : null}
                             </div>
 
                             {/* 2. ESPECIE */}
@@ -198,7 +198,7 @@ export default function RegistroPaciente() {
                                     required
                                     value={formData.especie}
                                     onChange={handleChange}
-                                    className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#64C2CE] focus:border-[#64C2CE] sm:text-sm"
+                                    className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#9BCDB0] focus:border-[#9BCDB0] sm:text-sm"
                                     placeholder="Perro, Gato, etc."
                                 />
                             </div>
@@ -212,7 +212,7 @@ export default function RegistroPaciente() {
                                     type="text"
                                     value={formData.raza}
                                     onChange={handleChange}
-                                    className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#64C2CE] focus:border-[#64C2CE] sm:text-sm"
+                                    className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#9BCDB0] focus:border-[#9BCDB0] sm:text-sm"
                                     placeholder="Raza de la mascota"
                                 />
                             </div>
@@ -227,7 +227,7 @@ export default function RegistroPaciente() {
                                     min="0"
                                     value={formData.edad}
                                     onChange={handleChange}
-                                    className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#64C2CE] focus:border-[#64C2CE] sm:text-sm"
+                                    className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#9BCDB0] focus:border-[#9BCDB0] sm:text-sm"
                                     placeholder="Edad en años"
                                 />
                             </div>
@@ -243,7 +243,7 @@ export default function RegistroPaciente() {
                                     min="0"
                                     value={formData.peso}
                                     onChange={handleChange}
-                                    className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#64C2CE] focus:border-[#64C2CE] sm:text-sm"
+                                    className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#9BCDB0] focus:border-[#9BCDB0] sm:text-sm"
                                     placeholder="Peso en kilogramos"
                                 />
                             </div>
@@ -259,14 +259,14 @@ export default function RegistroPaciente() {
                                     min="0"
                                     value={formData.altura}
                                     onChange={handleChange}
-                                    className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#64C2CE] focus:border-[#64C2CE] sm:text-sm"
+                                    className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#9BCDB0] focus:border-[#9BCDB0] sm:text-sm"
                                     placeholder="Altura en centímetros"
                                 />
                             </div>
 
                             {/* 7. CÉDULA DEL PROPIETARIO */}
-                            <div className="md:col-span-2">
-                                <h3 className="text-lg font-semibold text-[#E9576E] border-b pb-2 mt-4 mb-2">Datos del Propietario</h3>
+                            <div className="lg:col-span-3">
+                                <h3 className="text-lg font-semibold text-[#FF6B6B] border-b pb-2 mt-4 mb-2">Datos del Propietario</h3>
                                 <label htmlFor="cedulaPropietario" className="block text-sm font-medium text-gray-700">Cédula del Propietario</label>
                                 <input
                                     id="cedulaPropietario"
@@ -275,20 +275,19 @@ export default function RegistroPaciente() {
                                     required
                                     value={formData.cedulaPropietario}
                                     onChange={handleChange}
-                                    className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#64C2CE] focus:border-[#64C2CE] sm:text-sm"
-                                    placeholder="Cédula de identificación del propietario"
+                                    className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#9BCDB0] focus:border-[#9BCDB0] sm:text-sm"
                                 />
                             </div>
                         </div>
                         
                         {/* BOTÓN DE SUBMIT */}
-                        <div className="pt-4">
+                        <div className="pt-4 flex justify-center">
                             <button
                                 type="submit"
                                 disabled={loading || patientExists || checkingPatient}
-                                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-lg font-medium rounded-md text-white bg-[#64C2CE] hover:bg-gradient-to-r hover:from-[#64C2CE] hover:to-[#E9576E] transform hover:scale-110 hover:shadow-lg active:scale-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#E9576E] disabled:bg-[#9fd4d9] transition-transform duration-200 ease-in-out"
+                                className="inline-flex items-center px-6 py-2 rounded-full bg-[#9BCDB0] text-white font-semibold hover:bg-gradient-to-r hover:from-[#9BCDB0] hover:to-[#FF6B6B] transform hover:scale-110 hover:shadow-lg active:scale-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF6B6B] disabled:bg-[#C3DDD4] transition-transform duration-200 ease-in-out"
                             >
-                                {loading ? 'Enviando a API...' : 'Guardar Registro del Paciente'}
+                                {loading ? 'Enviando...' : 'Guardar Registro del Paciente'}
                             </button>
                             {patientExists && (
                                 <p className="text-sm text-red-600 mt-2">No se puede registrar: paciente duplicado.</p>

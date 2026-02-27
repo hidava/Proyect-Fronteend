@@ -12,6 +12,7 @@ export default function HistorialModal({ pacienteId, pacienteNombre, onClose, on
   const [validationErrors, setValidationErrors] = useState({});
   const [editMode, setEditMode] = useState(false); // mantener compatibilidad para acciones globales
   const [saving, setSaving] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   useEffect(() => {
     if (!pacienteId) return;
@@ -117,6 +118,8 @@ export default function HistorialModal({ pacienteId, pacienteNombre, onClose, on
       const j = await res.json();
       if (j?.success) {
         setEditMode(false);
+        setSuccessMessage('✓ Ficha médica actualizada correctamente');
+        setTimeout(() => setSuccessMessage(null), 3000);
         // refrescar datos
         await fetchEntries();
         if (typeof onSaved === 'function') onSaved();
@@ -180,6 +183,8 @@ export default function HistorialModal({ pacienteId, pacienteNombre, onClose, on
         setEditRows(prev => { const c = { ...prev }; delete c[rowKey]; return c; });
         setEditedData(ed => { const c = { ...ed }; delete c[rowKey]; return c; });
         setValidationErrors(v => { const c = { ...v }; delete c[rowKey]; return c; });
+        setSuccessMessage('✓ Ficha médica actualizada correctamente');
+        setTimeout(() => setSuccessMessage(null), 3000);
         await fetchEntries();
         if (typeof onSaved === 'function') onSaved();
       } else {
@@ -219,12 +224,17 @@ export default function HistorialModal({ pacienteId, pacienteNombre, onClose, on
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-[#F8F7F5] rounded-3xl p-6 w-full max-w-3xl shadow-2xl border-b-8 border-[#E9576E]">
+      <div className="relative bg-[#F8F7F5] rounded-3xl p-6 w-full max-w-3xl shadow-2xl border-b-8 border-[#C9A8D4]">
+        {successMessage && (
+          <div className="absolute top-4 left-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
+            <span className="text-lg">{successMessage}</span>
+          </div>
+        )}
         <button className="absolute right-4 top-4 text-gray-500 hover:text-gray-800" onClick={onClose} aria-label="Cerrar">✕</button>
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start justify-between mb-4" style={{ marginTop: successMessage ? '50px' : '0' }}>
           <div>
-            <h3 className="text-xl font-extrabold text-[#E9576E]">Ficha Médica - {pacienteNombre || ''}</h3>
-            <p className="text-sm text-[#64C2CE]">Vista combinada desde la base de datos</p>
+            <h3 className="text-xl font-extrabold text-[#FF6B6B]">Ficha Médica - {pacienteNombre || ''}</h3>
+            <p className="text-sm text-[#9BCDB0]">Vista combinada desde la base de datos</p>
           </div>
         </div>
 
@@ -240,10 +250,10 @@ export default function HistorialModal({ pacienteId, pacienteNombre, onClose, on
               const rowEditing = !!editRows[rowKey];
               const edited = editedData[rowKey] || {};
               return (
-                <div key={rowKey} className="border rounded-2xl p-4 cursor-default bg-gradient-to-r from-white to-[#FFF7F9] shadow-md" style={{ borderColor: '#F3B0BC' }}>
+                <div key={rowKey} className={`border rounded-2xl p-4 cursor-pointer transition-all duration-200 shadow-md ${isSelected ? 'bg-gradient-to-r from-[#F0E8F6] to-[#E8DFF2] border-[#C9A8D4] border-2' : 'bg-gradient-to-r from-white to-[#FFF7F9] border-[#F3B0BC]'}`} onClick={() => setSelected(e)}>
                   <div className="flex items-start justify-between">
                     <div>
-                      <div className="text-sm text-[#E9576E] font-bold">Ficha</div>
+                      <div className="text-sm text-[#FF6B6B] font-bold">Ficha</div>
                       <div className="text-xs text-gray-500">{e.nombre_mascota ? e.nombre_mascota : ''}</div>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -251,7 +261,7 @@ export default function HistorialModal({ pacienteId, pacienteNombre, onClose, on
                       {/* Header actions: pencil to enter edit; when editing show Save/Cancel */}
                       {!rowEditing ? (
                         <button onClick={() => toggleEditRow(rowKey, e)} title="Editar ficha" className="p-2 rounded-full hover:bg-gray-100">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#E9576E]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#FF6B6B]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 11l6-6 3 3-6 6H9v-3z" />
                           </svg>
                         </button>
@@ -271,7 +281,7 @@ export default function HistorialModal({ pacienteId, pacienteNombre, onClose, on
                       {/* Mostrar campos relevantes con etiquetas bonitas, en orden preferente */}
                       {(
                         // Mostrar únicamente campos de la tabla `historial_medico` cuando estén presentes
-                        [ 'historial_id', 'id', 'motivo_consulta', 'diagnostico', 'tratamiento', 'created_at', 'fecha', 'paciente_id', 'imagenes' ]
+                        [ 'motivo_consulta', 'diagnostico', 'tratamiento', 'created_at', 'fecha', 'paciente_id', 'imagenes' ]
                       ).map((key) => {
                         if (!(key in selected)) return null;
                         const val = selected[key];

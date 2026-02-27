@@ -1,13 +1,14 @@
 import { cookies } from 'next/headers'; 
 import { redirect } from 'next/navigation';
 
-// Colores: Rosa Intenso (#E9576E), Turquesa (#64C2CE)
+// Colores: Azul Petróleo (#204051), Verde Menta (#9BCDB0), Amarillo-Verde (#D4E09B)
 // 🛑 IMPORTANTE: Un layout que usa cookies() o headers() debe ser ASYNC
 export default async function DashboardLayout({ children }) {
     
     // 1. OBTENER LAS COOKIES DEL SERVIDOR
     // Lectura directa de la cookie, dentro de la función async, para evitar el warning.
-    const token = cookies().get('authToken')?.value; 
+    const cookieStore = await cookies();
+    const token = cookieStore.get('authToken')?.value; 
     
     // 2. LÓGICA DE REDIRECCIÓN (PROTECCIÓN)
     if (!token) {
@@ -18,8 +19,8 @@ export default async function DashboardLayout({ children }) {
     // 3. SI HAY TOKEN, RENDERIZAR EL CONTENIDO
     return (
         // El layout solo provee la estructura base y el encabezado
-        <section className="bg-[#FFEC99] paws-bg min-h-screen">
-            <header className="bg-[#E9576E] shadow-xl">
+        <section className="bg-[#FFF9E6] paws-bg min-h-screen">
+            <header className="bg-[#C9A8D4] shadow-xl">
                 <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                     <h1 className="text-2xl font-extrabold text-white">
                         Veterinaria Patitas Felices

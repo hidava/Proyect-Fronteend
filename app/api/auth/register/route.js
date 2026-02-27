@@ -3,16 +3,16 @@ import { NextResponse } from 'next/server';
 export async function POST(request) {
   try {
     const EXTERNAL_API = process.env.EXTERNAL_API_BASE || process.env.NEXT_PUBLIC_EXTERNAL_API_BASE;
-    console.log('[pacientes check POST] EXTERNAL_API:', EXTERNAL_API);
+    console.log('[auth register POST] EXTERNAL_API:', EXTERNAL_API);
     
     if (!EXTERNAL_API) {
-      console.error('[pacientes check POST] EXTERNAL_API_BASE no configurado');
+      console.error('[auth register POST] EXTERNAL_API_BASE no configurado');
       return NextResponse.json({ success: false, error: 'EXTERNAL_API_BASE no configurado' }, { status: 400 });
     }
 
     const body = await request.json();
-    const apiUrl = `${EXTERNAL_API}/pacientes/check`;
-    console.log('[pacientes check POST] Calling:', apiUrl);
+    const apiUrl = `${EXTERNAL_API}/auth/register`;
+    console.log('[auth register POST] Calling:', apiUrl);
 
     const res = await fetch(apiUrl, {
       method: 'POST',
@@ -20,11 +20,11 @@ export async function POST(request) {
       body: JSON.stringify(body)
     });
 
-    console.log('[pacientes check POST] Response status:', res.status);
+    console.log('[auth register POST] Response status:', res.status);
     const data = await res.json();
     return NextResponse.json(data, { status: res.status });
   } catch (err) {
-    console.error('Error proxying pacientes check POST:', err?.message || err);
+    console.error('Error proxying auth register POST:', err?.message || err);
     return NextResponse.json({ success: false, error: 'Error del servidor', details: err?.message }, { status: 500 });
   }
 }

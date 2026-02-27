@@ -53,6 +53,15 @@ export default function LoginPage() {
         checkAuth();
     }, [router]);
 
+    // Verificar si hay un mensaje de eliminación de cuenta
+    useEffect(() => {
+        const deletionMessage = localStorage.getItem('deletionMessage');
+        if (deletionMessage) {
+            setError(deletionMessage);
+            localStorage.removeItem('deletionMessage');
+        }
+    }, []);
+
     // Función handleSubmit (Llama a la API de Login)
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -91,12 +100,12 @@ export default function LoginPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[#FFEC99] paws-bg py-12 px-4 sm:px-6 lg:px-8">
-                <div className="tilt-card rounded-3xl bg-[#F8F7F5] shadow-2xl border-b-8 border-[#E9576E] p-8 sm:p-12 max-w-md text-center">
-                    <h1 className="text-3xl font-extrabold text-[#E9576E] flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center bg-[#FFF9E6] paws-bg py-12 px-4 sm:px-6 lg:px-8">
+                <div className="tilt-card rounded-3xl bg-[#F8F7F5] shadow-2xl border-b-8 border-[#C9A8D4] p-8 sm:p-12 max-w-md text-center">
+                    <h1 className="text-3xl font-extrabold text-[#FF6B6B] flex items-center justify-center">
                         Patitas Felices
                     </h1>
-                    <p className="mt-3 text-lg text-[#64C2CE]">Verificando sesión. Por favor, espera...</p>
+                    <p className="mt-3 text-lg text-[#9BCDB0]">Verificando sesión. Por favor, espera...</p>
                 </div>
             </div>
         );
@@ -105,13 +114,13 @@ export default function LoginPage() {
     // El JSX del formulario de Login (Ingreso) — Estilo inspirado en Dashboard
 
     const BrandingIcon = () => (
-        <svg className="w-10 h-10 mr-3 text-[#E9576E] shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg className="w-10 h-10 mr-3 text-[#FF6B6B] shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m-8-8h16"/>
         </svg>
     );
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#FFEC99] paws-bg py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen flex items-center justify-center bg-[#FFF9E6] paws-bg py-12 px-4 sm:px-6 lg:px-8\">
             <div className="max-w-3xl w-full">
                 <div
                     className="tilt-wrapper group relative"
@@ -131,20 +140,20 @@ export default function LoginPage() {
                         el.style.setProperty('--ry', `0deg`);
                     }}
                 >
-                    <div className="tilt-card rounded-3xl bg-[#F8F7F5] shadow-2xl border-b-8 border-[#E9576E] p-8 sm:p-12 flex flex-col md:flex-row items-center transform-gpu">
+                    <div className="tilt-card rounded-3xl bg-[#F8F7F5] shadow-2xl border-b-8 border-[#C9A8D4] p-8 sm:p-12 flex flex-col md:flex-row items-center transform-gpu">
                         {/* Floating decorative paws */}
                         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
-                            <svg className="floating-paw paw-1 text-[#E9576E]" viewBox="0 0 64 64" width="64" height="64" xmlns="http://www.w3.org/2000/svg">
+                            <svg className="floating-paw paw-1 text-[#C9A8D4]" viewBox="0 0 64 64" width="64" height="64" xmlns="http://www.w3.org/2000/svg">
                                 <g fill="currentColor" opacity="0.08">
                                     <path d="M20 8c-4 0-6.5 4-6.5 7s2.5 6 6.5 6 6.5-3 6.5-6-2.5-7-6.5-7zm10 18c-6 0-14 5-14 14 0 9 6 14 14 14s14-5 14-14c0-9-8-14-14-14zM46 8c-4 0-6.5 4-6.5 7S42 21 46 21s6.5-3 6.5-6-2.5-7-6.5-7z"/>
                                 </g>
                             </svg>
-                            <svg className="floating-paw paw-2 text-[#E9576E]" viewBox="0 0 64 64" width="48" height="48" xmlns="http://www.w3.org/2000/svg">
+                            <svg className="floating-paw paw-2 text-[#C9A8D4]" viewBox="0 0 64 64" width="48" height="48" xmlns="http://www.w3.org/2000/svg">
                                 <g fill="currentColor" opacity="0.08">
                                     <path d="M20 8c-4 0-6.5 4-6.5 7s2.5 6 6.5 6 6.5-3 6.5-6-2.5-7-6.5-7z"/>
                                 </g>
                             </svg>
-                            <svg className="floating-paw paw-3 text-[#E9576E]" viewBox="0 0 64 64" width="56" height="56" xmlns="http://www.w3.org/2000/svg">
+                            <svg className="floating-paw paw-3 text-[#C9A8D4]" viewBox="0 0 64 64" width="56" height="56" xmlns="http://www.w3.org/2000/svg">
                                 <g fill="currentColor" opacity="0.08">
                                     <path d="M12 24c-3 0-5 2-5 4s2 4 5 4 5-2 5-4-2-4-5-4z"/>
                                 </g>
@@ -152,10 +161,10 @@ export default function LoginPage() {
                         </div>
 
                     <div className="w-full md:w-1/2 text-center md:text-left mb-6 md:mb-0">
-                        <h1 className="text-4xl font-extrabold text-[#E9576E] flex items-center justify-center md:justify-start">
+                        <h1 className="text-4xl font-extrabold text-[#FF6B6B] flex items-center justify-center md:justify-start">
                             <BrandingIcon /> Patitas Felices
                         </h1>
-                        <p className="mt-2 text-lg text-[#64C2CE]">Dashboard de Administración </p>
+                        <p className="mt-2 text-lg text-[#9BCDB0]">Dashboard de Administración </p>
                     </div>
 
                     <div className="w-full md:w-1/2">
@@ -183,7 +192,7 @@ export default function LoginPage() {
                                             required
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
-                                            className="mt-1 appearance-none block w-full pl-10 px-4 py-3 border border-gray-200 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#64C2CE] focus:border-[#64C2CE] sm:text-sm"
+                                            className="mt-1 appearance-none block w-full pl-10 px-4 py-3 border border-gray-200 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#9BCDB0] focus:border-[#9BCDB0] sm:text-sm"
                                             placeholder="Ingresa tu correo electronico"
                                         />
                                     </div>
@@ -204,7 +213,7 @@ export default function LoginPage() {
                                             required
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
-                                            className="mt-1 appearance-none block w-full pl-10 pr-10 px-4 py-3 border border-gray-200 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#64C2CE] focus:border-[#64C2CE] sm:text-sm"
+                                            className="mt-1 appearance-none block w-full pl-10 pr-10 px-4 py-3 border border-gray-200 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#9BCDB0] focus:border-[#9BCDB0] sm:text-sm"
                                             placeholder="Ingresa tu contraseña"
                                         />
 
@@ -228,7 +237,7 @@ export default function LoginPage() {
                             {/* ¿Olvidaste tu contraseña? (alineado a la derecha) */}
                             <div className="flex items-center justify-end mb-2">
                                 <div className="text-sm">
-                                    <a href="#" className="font-medium text-[#64C2CE] hover:text-[#57aab1]">
+                                    <a href="#" className="font-medium text-[#9BCDB0] hover:text-[#7ab89f]">
                                         ¿Olvidaste tu contraseña?
                                     </a>
                                 </div>
@@ -239,7 +248,7 @@ export default function LoginPage() {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="group relative w-full flex items-center justify-center gap-3 py-3 px-4 border border-transparent text-sm font-medium rounded-full text-white bg-[#64C2CE] hover:bg-[#E9576E] focus:outline-none focus:ring-4 focus:ring-[#E9576E]/50 disabled:bg-[#64C2CE]/50 transition duration-200 ease-in-out shadow-lg"
+                                    className="group relative w-full flex items-center justify-center gap-3 py-3 px-4 border border-transparent text-sm font-medium rounded-full text-white bg-[#9BCDB0] hover:bg-[#FF6B6B] focus:outline-none focus:ring-4 focus:ring-[#FF6B6B]/50 disabled:bg-[#9BCDB0]/50 transition duration-200 ease-in-out shadow-lg"
                                 >
                                     <span className="transition-transform duration-200 transform">{loading ? 'Iniciando...' : 'Iniciar Sesión'}</span>
                                     <span className="ml-2 paw-emoji opacity-0 group-hover:opacity-100 transition-opacity duration-200">🐾</span>
@@ -250,7 +259,7 @@ export default function LoginPage() {
                             <div className="text-center">
                                 <p className="mt-2 text-sm text-gray-600">
                                     ¿No tienes una cuenta?{' '}
-                                    <Link href="/register" className="font-medium text-[#E9576E] hover:text-[#C94a60]">
+                                    <Link href="/register" className="font-medium text-[#FF6B6B] hover:text-[#e85555]">
                                         Regístrate
                                     </Link>
                                 </p>

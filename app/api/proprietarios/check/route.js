@@ -1,20 +1,30 @@
 import { NextResponse } from 'next/server';
-import pool from '../../../lib/db';
 
 export async function POST(request) {
   try {
-    const body = await request.json();
-    const { cedula } = body;
-
-    if (!cedula || typeof cedula !== 'string' || cedula.trim() === '') {
-      return NextResponse.json({ error: 'Cédula inválida' }, { status: 400 });
+    const EXTERNAL_API = process.env.EXTERNAL_API_BASE || process.env.NEXT_PUBLIC_EXTERNAL_API_BASE;
+    console.log('[propietarios check POST] EXTERNAL_API:', EXTERNAL_API);
+    
+    if (!EXTERNAL_API) {
+      console.error('[propietarios check POST] EXTERNAL_API_BASE no configurado');
+      return NextResponse.json({ success: false, error: 'EXTERNAL_API_BASE no configurado' }, { status: 400 });
     }
 
-    const [rows] = await pool.query('SELECT 1 FROM propietarios WHERE cedula = ? LIMIT 1', [cedula.trim()]);
+    const body = await request.json();
+    const apiUrl = `${EXTERNAL_API}/propietarios/check`;
+    console.log('[propietarios check POST] Calling:', apiUrl);
 
-    return NextResponse.json({ exists: rows.length > 0 });
+    const res = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    console.log('[propietarios check POST] Response status:', res.status);
+    const data = await res.json();
+    return NextResponse.json(data, { status: res.status });
   } catch (err) {
-    if (process.env.NODE_ENV !== 'production') console.error('Error checking cedula:', err);
-    return NextResponse.json({ error: 'Error del servidor' }, { status: 500 });
+    console.error('Error proxying propietarios check POST:', err?.message || err);
+    return NextResponse.json({ success: false, error: 'Error del servidor', details: err?.message }, { status: 500 });
   }
 }

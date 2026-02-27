@@ -1,29 +1,25 @@
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request, { params }) {
   try {
     const EXTERNAL_API = process.env.EXTERNAL_API_BASE || process.env.NEXT_PUBLIC_EXTERNAL_API_BASE;
-    console.log('[pacientes list GET] EXTERNAL_API:', EXTERNAL_API);
     
     if (!EXTERNAL_API) {
-      console.error('[pacientes list GET] EXTERNAL_API_BASE no configurado');
       return NextResponse.json({ success: false, error: 'EXTERNAL_API_BASE no configurado' }, { status: 400 });
     }
 
-    const apiUrl = `${EXTERNAL_API}/pacientes/list`;
-    console.log('[pacientes list GET] Calling:', apiUrl);
-    
+    const { cedula } = await params;
+    const apiUrl = `${EXTERNAL_API}/pacientes/owner/${cedula}`;
+
     const res = await fetch(apiUrl, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      cache: 'no-store'
+      headers: { 'Content-Type': 'application/json' }
     });
 
-    console.log('[pacientes list GET] Response status:', res.status);
     const data = await res.json();
     return NextResponse.json(data, { status: res.status });
   } catch (err) {
-    console.error('Error proxying pacientes list GET:', err?.message || err);
+    console.error('Error proxying pacientes by owner:', err?.message || err);
     return NextResponse.json({ success: false, error: 'Error del servidor', details: err?.message }, { status: 500 });
   }
 }

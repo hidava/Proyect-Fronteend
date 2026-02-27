@@ -61,13 +61,13 @@ export default function RegisterPage() {
 
     // El JSX del formulario de Registro
     const BrandingIcon = () => (
-        <svg className="w-10 h-10 mr-3 text-[#E9576E] shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg className="w-10 h-10 mr-3 text-[#FF6B6B] shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m-8-8h16"/>
         </svg>
     );
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#FFEC99] paws-bg py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen flex items-center justify-center bg-[#FFF9E6] paws-bg py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl w-full">
                 <div
                     className="tilt-wrapper group relative"
@@ -87,19 +87,19 @@ export default function RegisterPage() {
                         el.style.setProperty('--ry', `0deg`);
                     }}
                 >
-                    <div className="tilt-card rounded-3xl bg-[#F8F7F5] shadow-2xl border-b-8 border-[#E9576E] p-8 sm:p-12 flex flex-col md:flex-row items-center transform-gpu">
+                    <div className="tilt-card rounded-3xl bg-[#F8F7F5] shadow-2xl border-b-8 border-[#C9A8D4] p-8 sm:p-12 flex flex-col md:flex-row items-center transform-gpu">
                         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
-                            <svg className="floating-paw paw-1 text-[#E9576E]" viewBox="0 0 64 64" width="64" height="64" xmlns="http://www.w3.org/2000/svg">
+                            <svg className="floating-paw paw-1 text-[#C9A8D4]" viewBox="0 0 64 64" width="64" height="64" xmlns="http://www.w3.org/2000/svg">
                                 <g fill="currentColor" opacity="0.08">
                                     <path d="M20 8c-4 0-6.5 4-6.5 7s2.5 6 6.5 6 6.5-3 6.5-6-2.5-7-6.5-7zm10 18c-6 0-14 5-14 14 0 9 6 14 14 14s14-5 14-14c0-9-8-14-14-14zM46 8c-4 0-6.5 4-6.5 7S42 21 46 21s6.5-3 6.5-6-2.5-7-6.5-7z"/>
                                 </g>
                             </svg>
-                            <svg className="floating-paw paw-2 text-[#E9576E]" viewBox="0 0 64 64" width="48" height="48" xmlns="http://www.w3.org/2000/svg">
+                            <svg className="floating-paw paw-2 text-[#C9A8D4]" viewBox="0 0 64 64" width="48" height="48" xmlns="http://www.w3.org/2000/svg">
                                 <g fill="currentColor" opacity="0.08">
                                     <path d="M20 8c-4 0-6.5 4-6.5 7s2.5 6 6.5 6 6.5-3 6.5-6-2.5-7-6.5-7z"/>
                                 </g>
                             </svg>
-                            <svg className="floating-paw paw-3 text-[#E9576E]" viewBox="0 0 64 64" width="56" height="56" xmlns="http://www.w3.org/2000/svg">
+                            <svg className="floating-paw paw-3 text-[#C9A8D4]" viewBox="0 0 64 64" width="56" height="56" xmlns="http://www.w3.org/2000/svg">
                                 <g fill="currentColor" opacity="0.08">
                                     <path d="M12 24c-3 0-5 2-5 4s2 4 5 4 5-2 5-4-2-4-5-4z"/>
                                 </g>
@@ -107,10 +107,10 @@ export default function RegisterPage() {
                         </div>
 
                         <div className="w-full md:w-1/2 text-center md:text-left mb-6 md:mb-0">
-                            <h1 className="text-4xl font-extrabold text-[#E9576E] flex items-center justify-center md:justify-start">
+                            <h1 className="text-4xl font-extrabold text-[#FF6B6B] flex items-center justify-center md:justify-start">
                                 <BrandingIcon /> Patitas Felices
                             </h1>
-                            <p className="mt-2 text-lg text-[#64C2CE]">Crea tu cuenta de administrador</p>
+                            <p className="mt-2 text-lg text-[#9BCDB0]">Crea tu cuenta de administrador</p>
                             <p className="mt-3 text-sm text-gray-600">
                                 Completa los datos para habilitar el acceso al sistema.
                             </p>
@@ -143,7 +143,7 @@ export default function RegisterPage() {
                                     <button
                                         type="submit"
                                         disabled={loading}
-                                        className="group relative w-full flex items-center justify-center gap-3 py-3 px-4 border border-transparent text-sm font-medium rounded-full text-white bg-[#64C2CE] hover:bg-[#E9576E] focus:outline-none focus:ring-4 focus:ring-[#E9576E]/50 disabled:bg-[#64C2CE]/50 transition duration-200 ease-in-out shadow-lg"
+                                        className="group relative w-full flex items-center justify-center gap-3 py-3 px-4 border border-transparent text-sm font-medium rounded-full text-white bg-[#9BCDB0] hover:bg-[#FF6B6B] focus:outline-none focus:ring-4 focus:ring-[#FF6B6B]/50 disabled:bg-[#9BCDB0]/50 transition duration-200 ease-in-out shadow-lg"
                                     >
                                         <span className="transition-transform duration-200 transform">{loading ? 'Registrando...' : 'Registrar Cuenta'}</span>
                                         <span className="ml-2 paw-emoji opacity-0 group-hover:opacity-100 transition-opacity duration-200">🐾</span>
@@ -153,7 +153,7 @@ export default function RegisterPage() {
                                 <div className="text-center">
                                     <p className="mt-2 text-sm text-gray-600">
                                         ¿Ya tienes una cuenta?{' '}
-                                        <Link href="/" className="font-medium text-[#E9576E] hover:text-[#C94a60]">
+                                        <Link href="/" className="font-medium text-[#FF6B6B] hover:text-[#e85555]">
                                             Iniciar Sesión
                                         </Link>
                                     </p>
@@ -180,7 +180,7 @@ const Input = ({ label, name, type, value, onChange, required, wrapperClassName 
             required={required}
             value={value}
             onChange={onChange}
-            className="mt-1 appearance-none block w-full px-4 py-3 border border-gray-200 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#64C2CE] focus:border-[#64C2CE] sm:text-sm"
+            className="mt-1 appearance-none block w-full px-4 py-3 border border-gray-200 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#9BCDB0] focus:border-[#9BCDB0] sm:text-sm"
             placeholder={`Ingresa tu ${label.toLowerCase()}`}
         />
     </div>
