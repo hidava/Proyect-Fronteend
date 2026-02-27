@@ -2,11 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth';
 
 export default function CitasPage() {
   const router = useRouter();
-  const { authToken } = useAuth();
 
   // Estado para lista de citas
   const [citas, setCitas] = useState([]);
@@ -45,9 +43,8 @@ export default function CitasPage() {
 
   // Cargar citas existentes
   useEffect(() => {
-    if (!authToken) return;
     cargarCitas();
-  }, [authToken]);
+  }, []);
 
   const cargarCitas = async () => {
     try {
