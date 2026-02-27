@@ -8,7 +8,8 @@ export async function GET(request, { params }) {
       return NextResponse.json({ success: false, error: 'EXTERNAL_API_BASE no configurado' }, { status: 400 });
     }
 
-    const slug = params.slug.join('/');
+    const awaitedParams = await params;
+    const slug = awaitedParams.slug.join('/');
     const searchParams = new URL(request.url).search;
     
     const apiUrl = `${EXTERNAL_API}/propietarios/${slug}${searchParams}`;

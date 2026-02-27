@@ -8,8 +8,9 @@ export async function GET(request, { params }) {
       return NextResponse.json({ success: false, error: 'EXTERNAL_API_BASE no configurado' }, { status: 400 });
     }
 
-    // Construir la ruta desde los params dinámicos
-    const slug = params.slug.join('/');
+    // Await params antes de usarlos
+    const awaitedParams = await params;
+    const slug = awaitedParams.slug.join('/');
     const searchParams = new URL(request.url).search;
     
     const apiUrl = `${EXTERNAL_API}/citas/${slug}${searchParams}`;
@@ -62,7 +63,8 @@ export async function PUT(request, { params }) {
     }
 
     const body = await request.json();
-    const slug = params.slug.join('/');
+    const awaitedParams = await params;
+    const slug = awaitedParams.slug.join('/');
     const apiUrl = `${EXTERNAL_API}/citas/${slug}`;
 
     const res = await fetch(apiUrl, {
@@ -87,7 +89,8 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ success: false, error: 'EXTERNAL_API_BASE no configurado' }, { status: 400 });
     }
 
-    const slug = params.slug.join('/');
+    const awaitedParams = await params;
+    const slug = awaitedParams.slug.join('/');
     const apiUrl = `${EXTERNAL_API}/citas/${slug}`;
 
     const res = await fetch(apiUrl, {
