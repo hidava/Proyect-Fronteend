@@ -266,7 +266,7 @@ export default function RegistroPaciente() {
 
                             {/* 7. CÉDULA DEL PROPIETARIO */}
                             <div className="lg:col-span-3">
-                                <h3 className="text-lg font-semibold text-[#FF6B6B] border-b pb-2 mt-4 mb-2">Datos del Propietario</h3>
+                                <h3 className="text-lg font-semibold text-[#C9A8D4] border-b pb-2 mt-4 mb-2">Datos del Propietario</h3>
                                 <label htmlFor="cedulaPropietario" className="block text-sm font-medium text-gray-700">Cédula del Propietario</label>
                                 <input
                                     id="cedulaPropietario"

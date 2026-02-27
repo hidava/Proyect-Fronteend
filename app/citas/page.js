@@ -474,7 +474,7 @@ export default function CitasPage() {
 
               {propietarioInfo && (
                 <div className="p-4 bg-white rounded-lg border-2 border-[#9BCDB0]">
-                  <h3 className="font-bold text-[#9BCDB0] mb-2">Propietario Encontrado:</h3>
+                  <h3 className="font-bold text-[#C9A8D4] mb-2">Propietario Encontrado:</h3>
                   <div className="space-y-1 text-sm">
                     <p><strong>Nombre:</strong> {propietarioInfo.nombre} {propietarioInfo.apellido}</p>
                     <p><strong>Cédula:</strong> {propietarioInfo.cedula}</p>
