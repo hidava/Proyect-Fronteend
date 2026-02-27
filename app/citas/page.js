@@ -83,19 +83,19 @@ export default function CitasPage() {
       setMascotaSeleccionada('');
 
       // Buscar propietario
-      const resPropietario = await fetch(`/api/proprietarios?cedula=${cedula}`);
+      const resPropietario = await fetch(`/api/propietarios/${cedula}`);
       const dataPropietario = await resPropietario.json();
 
-      if (!dataPropietario.success || !dataPropietario.data || dataPropietario.data.length === 0) {
+      if (!dataPropietario.success || !dataPropietario.data) {
         setErrorPropietario('No existen propietarios asociados a esa cédula');
         return;
       }
 
-      const propietario = dataPropietario.data[0];
+      const propietario = dataPropietario.data;
       setPropietarioInfo(propietario);
 
       // Cargar mascotas del propietario
-      const resMascotas = await fetch(`/api/pacientes?propietario=${cedula}`);
+      const resMascotas = await fetch(`/api/pacientes/owner/${cedula}`);
       const dataMascotas = await resMascotas.json();
 
       if (dataMascotas.success && dataMascotas.data) {
