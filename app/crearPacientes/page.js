@@ -125,10 +125,16 @@ export default function RegistroPaciente() {
         } catch (err) {
             if (process.env.NODE_ENV !== 'production') console.warn("Error al registrar el paciente:", err);
             const message = err?.message || 'Error de conexión con el servicio de registro. Inténtalo de nuevo.';
-            if (message.includes('Cédula no encontrada')) {
-                if (typeof window !== 'undefined') window.alert(message);
+            const normalizedMessage = message
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase();
+
+            if (normalizedMessage.includes('cedula no encontrada')) {
+                setError('Cédula inexistente');
+            } else {
+                setError(message);
             }
-            setError(message);
             setSuccessMessage('');
         } finally {
             setLoading(false);
