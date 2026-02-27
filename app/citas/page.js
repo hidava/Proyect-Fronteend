@@ -45,6 +45,35 @@ export default function CitasPage() {
   // Referencia para scroll automático
   const formRef = React.useRef(null);
 
+  // Auto-eliminar mensajes después de 2 segundos
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(''), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+
+  useEffect(() => {
+    if (actionMessage) {
+      const timer = setTimeout(() => setActionMessage(''), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [actionMessage]);
+
+  useEffect(() => {
+    if (errorPropietario) {
+      const timer = setTimeout(() => setErrorPropietario(''), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorPropietario]);
+
+  useEffect(() => {
+    if (errorCitas) {
+      const timer = setTimeout(() => setErrorCitas(''), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorCitas]);
+
   // Cargar citas existentes
   useEffect(() => {
     cargarCitas();
@@ -212,7 +241,6 @@ export default function CitasPage() {
 
       if (data.success) {
         setSuccessMessage('¡Cita guardada exitosamente!');
-        setTimeout(() => setSuccessMessage(''), 2000);
 
         // Limpiar formulario y recargar citas
         setCedula('');
@@ -287,7 +315,6 @@ export default function CitasPage() {
 
       if (data.success) {
         setActionMessage('Cita actualizada correctamente');
-        setTimeout(() => setActionMessage(''), 2000);
         cancelarEdicion();
         cargarCitas();
         if (fechaSeleccionada) {
@@ -315,7 +342,6 @@ export default function CitasPage() {
 
       if (data.success) {
         setActionMessage('Cita eliminada correctamente');
-        setTimeout(() => setActionMessage(''), 2000);
         cargarCitas();
         if (fechaSeleccionada) {
           cargarHorarios(fechaSeleccionada);
