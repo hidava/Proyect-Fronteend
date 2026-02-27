@@ -17,7 +17,9 @@ export default function CitasPage() {
   const [savingCita, setSavingCita] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [actionMessage, setActionMessage] = useState('');
+  const [busquedaPropietario, setBusquedaPropietario] = useState('');
   const [editingCita, setEditingCita] = useState(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
   const [editData, setEditData] = useState({ fecha_cita: '', hora_cita: '', descripcion: '', estado: 'pendiente' });
   const [savingEdit, setSavingEdit] = useState(false);
 
@@ -44,6 +46,63 @@ export default function CitasPage() {
 
   // Referencia para scroll automático
   const formRef = React.useRef(null);
+
+  const getCostaRicaNow = () => {
+    const now = new Date();
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Costa_Rica',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      hour12: false
+    }).formatToParts(now);
+
+    const getPart = (type) => parts.find((part) => part.type === type)?.value || '';
+    return {
+      fechaHoy: `${getPart('year')}-${getPart('month')}-${getPart('day')}`,
+      horaActual: parseInt(getPart('hour'), 10)
+    };
+  };
+
+  const parseDateWithoutTimezone = (dateValue) => {
+    if (!dateValue) return null;
+    const datePart = String(dateValue).split('T')[0];
+    const [year, month, day] = datePart.split('-').map(Number);
+
+    if (!year || !month || !day) return null;
+    return new Date(year, month - 1, day);
+  };
+
+  const formatFechaCita = (dateValue, longFormat = false) => {
+    const parsedDate = parseDateWithoutTimezone(dateValue);
+    if (!parsedDate) return '';
+
+    if (longFormat) {
+      return parsedDate.toLocaleDateString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+
+    return parsedDate.toLocaleDateString('es-ES');
+  };
+
+  const normalizarTexto = (texto) =>
+    String(texto || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+
+  const citasFiltradas = citas.filter((cita) => {
+    const termino = normalizarTexto(busquedaPropietario).trim();
+    if (!termino) return true;
+
+    const nombreCompleto = normalizarTexto(`${cita.propietario_nombre || ''} ${cita.propietario_apellido || ''}`);
+    return nombreCompleto.includes(termino);
+  });
 
   // Auto-eliminar mensajes después de 2 segundos
   useEffect(() => {
@@ -156,7 +215,25 @@ export default function CitasPage() {
       const data = await res.json();
 
       if (data.success) {
-        setHorariosDisponibles(data.data || []);
+        const horarios = data.data || [];
+        const { fechaHoy, horaActual } = getCostaRicaNow();
+
+        if (fecha === fechaHoy) {
+          if (horaActual >= 18) {
+            setHorariosDisponibles([]);
+            return;
+          }
+
+          const horariosFiltrados = horarios.filter((horario) => {
+            const horaSlot = parseInt((horario.hora || '').substring(0, 2), 10);
+            return Number.isInteger(horaSlot) && horaSlot > horaActual && horaSlot <= 18;
+          });
+
+          setHorariosDisponibles(horariosFiltrados);
+          return;
+        }
+
+        setHorariosDisponibles(horarios);
       } else {
         setHorariosDisponibles([]);
       }
@@ -283,7 +360,7 @@ export default function CitasPage() {
   const abrirEdicion = (cita) => {
     setEditingCita(cita.id_cita);
     setEditData({
-      fecha_cita: cita.fecha_cita ? new Date(cita.fecha_cita).toISOString().split('T')[0] : '',
+      fecha_cita: cita.fecha_cita ? String(cita.fecha_cita).split('T')[0] : '',
       hora_cita: cita.hora_cita ? cita.hora_cita.substring(0, 5) : '',
       descripcion: cita.descripcion || '',
       estado: cita.estado === 'completada' ? 'realizada' : cita.estado
@@ -332,8 +409,6 @@ export default function CitasPage() {
   };
 
   const handleEliminarCita = async (idCita) => {
-    if (!confirm('¿Desea eliminar esta cita?')) return;
-
     try {
       const res = await fetch(`/api/citas/${idCita}`, {
         method: 'DELETE'
@@ -341,6 +416,7 @@ export default function CitasPage() {
       const data = await res.json();
 
       if (data.success) {
+        setPendingDeleteId(null);
         setActionMessage('Cita eliminada correctamente');
         cargarCitas();
         if (fechaSeleccionada) {
@@ -615,7 +691,7 @@ export default function CitasPage() {
                 <h3 className="font-bold text-[#C9A8D4] mb-3">Resumen de su Cita:</h3>
                 <p><strong>Propietario:</strong> {propietarioInfo.nombre} {propietarioInfo.apellido}</p>
                 <p><strong>Mascota:</strong> {mascotas.find(m => m.id_mascota === parseInt(mascotaSeleccionada))?.nombre}</p>
-                <p><strong>Fecha:</strong> {new Date(fechaSeleccionada).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <p><strong>Fecha:</strong> {formatFechaCita(fechaSeleccionada, true)}</p>
                 <p><strong>Hora:</strong> {horaSeleccionada.substring(0, 5)}</p>
                 <p><strong>Sede:</strong> {sede}</p>
               </div>
@@ -675,6 +751,17 @@ export default function CitasPage() {
                 <span className="bg-gradient-to-r from-[#FF6B6B] to-[#8E7CC3] bg-clip-text text-transparent">Citas Registradas</span>
               </h2>
 
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Buscar por propietario</label>
+                <input
+                  type="text"
+                  value={busquedaPropietario}
+                  onChange={(e) => setBusquedaPropietario(e.target.value)}
+                  placeholder="Ej: Nathaly"
+                  className="w-full sm:max-w-md px-4 py-2 border-2 border-[#C9A8D4] rounded-xl focus:outline-none focus:border-[#A88FC9]"
+                />
+              </div>
+
               {loadingCitas && (
                 <div className="text-center text-gray-500 py-8">Cargando citas...</div>
               )}
@@ -697,9 +784,15 @@ export default function CitasPage() {
                 </div>
               )}
 
-              {!loadingCitas && citas.length > 0 && (
+              {!loadingCitas && citas.length > 0 && citasFiltradas.length === 0 && (
+                <div className="text-center py-8 bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-200">
+                  <p className="text-gray-600 font-medium">No se encontraron citas para ese propietario</p>
+                </div>
+              )}
+
+              {!loadingCitas && citasFiltradas.length > 0 && (
                 <div className="space-y-3">
-                  {citas.map((cita) => (
+                  {citasFiltradas.map((cita) => (
                     <div key={cita.id_cita} className="group relative">
                       <div className="relative bg-gradient-to-r from-white/80 via-[#FFF4E0]/30 to-white/80 backdrop-blur-sm rounded-xl border border-gray-200/60 shadow-md hover:shadow-xl hover:border-gray-300/80 transition-all duration-300 hover:scale-[1.01] overflow-hidden">
                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#FF6B6B] via-[#9BCDB0] to-[#8E7CC3] group-hover:w-1.5 transition-all duration-300"></div>
@@ -729,7 +822,7 @@ export default function CitasPage() {
                           <div className="flex-1 min-w-0">
                             <div className="text-xs font-bold text-[#9BCDB0] uppercase tracking-wide mb-0.5">Fecha / Hora</div>
                             <div className="text-base font-extrabold text-gray-800">
-                              {new Date(cita.fecha_cita).toLocaleDateString('es-ES')} · {cita.hora_cita.substring(0, 5)}
+                              {formatFechaCita(cita.fecha_cita)} · {cita.hora_cita.substring(0, 5)}
                             </div>
                           </div>
 
@@ -745,7 +838,7 @@ export default function CitasPage() {
                             <div className="min-w-0">
                               <div className="text-lg font-extrabold text-gray-800 truncate">{cita.paciente_nombre || 'Sin mascota'}</div>
                               <div className="text-sm text-gray-600 truncate">{cita.propietario_nombre} {cita.propietario_apellido || ''}</div>
-                              <div className="text-sm text-gray-600 mt-1">{new Date(cita.fecha_cita).toLocaleDateString('es-ES')} · {cita.hora_cita.substring(0, 5)}</div>
+                              <div className="text-sm text-gray-600 mt-1">{formatFechaCita(cita.fecha_cita)} · {cita.hora_cita.substring(0, 5)}</div>
                             </div>
                             <span className={`inline-flex items-center px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase ${getEstadoStyles(cita.estado)}`}>
                               {getEstadoLabel(cita.estado)}
@@ -830,12 +923,32 @@ export default function CitasPage() {
                             Editar
                           </button>
                           <button
-                            onClick={() => handleEliminarCita(cita.id_cita)}
+                            onClick={() => setPendingDeleteId(cita.id_cita)}
                             className="px-4 py-2 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-semibold hover:shadow-lg"
                           >
                             Eliminar
                           </button>
                         </div>
+
+                        {pendingDeleteId === cita.id_cita && (
+                          <div className="mx-5 mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <p className="text-sm font-semibold text-red-700">¿Desea eliminar esta cita?</p>
+                            <div className="flex justify-end gap-2">
+                              <button
+                                onClick={() => setPendingDeleteId(null)}
+                                className="px-4 py-2 rounded-full bg-gray-200 text-gray-700 text-sm font-semibold hover:bg-gray-300"
+                              >
+                                Cancelar
+                              </button>
+                              <button
+                                onClick={() => handleEliminarCita(cita.id_cita)}
+                                className="px-4 py-2 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-semibold hover:shadow-lg"
+                              >
+                                Aceptar
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
