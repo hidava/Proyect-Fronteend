@@ -16,6 +16,10 @@ export default function CitasPage() {
   const [step, setStep] = useState(1);
   const [savingCita, setSavingCita] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [actionMessage, setActionMessage] = useState('');
+  const [editingCita, setEditingCita] = useState(null);
+  const [editData, setEditData] = useState({ fecha_cita: '', hora_cita: '', descripcion: '', estado: 'pendiente' });
+  const [savingEdit, setSavingEdit] = useState(false);
 
   // Paso 1: Selección de propietario y mascota
   const [cedula, setCedula] = useState('');
@@ -236,32 +240,150 @@ export default function CitasPage() {
   const hoy = new Date();
   const fechaMinima = hoy.toISOString().split('T')[0];
 
+  const getEstadoStyles = (estado) => {
+    if (estado === 'pendiente') return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+    if (estado === 'confirmada') return 'bg-green-100 text-green-700 border-green-200';
+    if (estado === 'cancelada') return 'bg-red-100 text-red-700 border-red-200';
+    return 'bg-blue-100 text-blue-700 border-blue-200';
+  };
+
+  const getEstadoLabel = (estado) => {
+    if (estado === 'completada') return 'realizada';
+    return estado;
+  };
+
+  const abrirEdicion = (cita) => {
+    setEditingCita(cita.id_cita);
+    setEditData({
+      fecha_cita: cita.fecha_cita ? new Date(cita.fecha_cita).toISOString().split('T')[0] : '',
+      hora_cita: cita.hora_cita ? cita.hora_cita.substring(0, 5) : '',
+      descripcion: cita.descripcion || '',
+      estado: cita.estado === 'completada' ? 'realizada' : cita.estado
+    });
+  };
+
+  const cancelarEdicion = () => {
+    setEditingCita(null);
+    setEditData({ fecha_cita: '', hora_cita: '', descripcion: '', estado: 'pendiente' });
+  };
+
+  const handleGuardarEdicion = async (idCita) => {
+    try {
+      setSavingEdit(true);
+      setActionMessage('');
+
+      const res = await fetch(`/api/citas/${idCita}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fecha_cita: editData.fecha_cita,
+          hora_cita: editData.hora_cita,
+          descripcion: editData.descripcion,
+          estado: editData.estado
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setActionMessage('Cita actualizada correctamente');
+        setTimeout(() => setActionMessage(''), 2000);
+        cancelarEdicion();
+        cargarCitas();
+        if (fechaSeleccionada) {
+          cargarHorarios(fechaSeleccionada);
+        }
+      } else {
+        alert(`Error: ${data.message || 'No se pudo actualizar la cita'}`);
+      }
+    } catch (error) {
+      console.error('Error editando cita:', error);
+      alert('Error al editar la cita');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const handleEliminarCita = async (idCita) => {
+    if (!confirm('¿Desea eliminar esta cita?')) return;
+
+    try {
+      const res = await fetch(`/api/citas/${idCita}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setActionMessage('Cita eliminada correctamente');
+        setTimeout(() => setActionMessage(''), 2000);
+        cargarCitas();
+        if (fechaSeleccionada) {
+          cargarHorarios(fechaSeleccionada);
+        }
+      } else {
+        alert(`Error: ${data.message || 'No se pudo eliminar la cita'}`);
+      }
+    } catch (error) {
+      console.error('Error eliminando cita:', error);
+      alert('Error al eliminar la cita');
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#F8F7F5] to-white p-4 sm:p-6 md:p-8">
-      {/* Header */}
-      <div className="max-w-6xl mx-auto mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold text-[#C9A8D4] mb-2">📅 Gestión de Citas</h1>
-        <p className="text-gray-600">Agenda y gestiona las citas veterinarias de tus mascotas</p>
-      </div>
+    <div className="min-h-screen w-full p-4 sm:p-6 lg:p-16 font-sans bg-[#FFF9E6] paws-bg">
+      <div className="max-w-7xl w-full mx-auto">
+        <div className="relative bg-white shadow-2xl rounded-3xl px-4 sm:px-6 py-6 sm:py-8 border-b-8 border-[#C9A8D4] overflow-hidden">
+          <div className="absolute -right-24 -top-24 h-48 w-48 rounded-full bg-[#C9A8D4]/15 blur-2xl" />
+          <div className="absolute -left-20 -bottom-24 h-56 w-56 rounded-full bg-[#9BCDB0]/20 blur-2xl" />
 
-      {/* Mensaje de éxito */}
-      {successMessage && (
-        <div className="max-w-6xl mx-auto mb-4 p-4 bg-green-100 border-l-4 border-[#9BCDB0] text-[#9BCDB0] rounded">
-          ✓ {successMessage}
-        </div>
-      )}
+          <div className="relative">
+            <div className="flex flex-col gap-4 mb-6 sm:mb-8">
+              <div className="flex items-start gap-3">
+                <svg className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 text-[#FF6B6B]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z"/>
+                </svg>
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-xl sm:text-3xl lg:text-4xl font-extrabold text-[#FF6B6B]">Gestión de Citas</h1>
+                  <p className="text-xs sm:text-sm text-[#9BCDB0] mt-1">Agenda y gestiona las citas veterinarias de tus mascotas</p>
+                </div>
+              </div>
+              <div className="flex justify-center sm:justify-end">
+                <button
+                  onClick={() => router.push('/dashboard')}
+                  className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-[#C9A8D4] to-[#8E7CC3] text-white text-sm font-semibold hover:from-[#B897C3] hover:to-[#7C67B3] hover:shadow-xl transition-all duration-200 transform hover:scale-105 whitespace-nowrap"
+                >
+                  <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                  Volver al Dashboard
+                </button>
+              </div>
+            </div>
 
-      {/* Botón Nueva Cita */}
-      {!showForm && (
-        <div className="max-w-6xl mx-auto mb-6">
-          <button
-            onClick={() => setShowForm(true)}
-            className="px-6 py-3 bg-gradient-to-r from-[#C9A8D4] to-[#A88FC9] text-white font-bold rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105"
-          >
-            + Nueva Cita
-          </button>
-        </div>
-      )}
+            {/* Mensaje de éxito */}
+            {successMessage && (
+              <div className="mb-4 rounded-2xl border-2 border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 px-5 py-3.5 text-sm font-medium text-green-700 shadow-sm">
+                ✓ {successMessage}
+              </div>
+            )}
+
+            {actionMessage && (
+              <div className="mb-4 rounded-2xl border-2 border-green-300 bg-gradient-to-r from-green-50 to-emerald-50 px-5 py-3.5 text-sm font-medium text-green-700 shadow-sm">
+                ✓ {actionMessage}
+              </div>
+            )}
+
+            {/* Botón Nueva Cita */}
+            {!showForm && (
+              <div className="mb-6">
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#9BCDB0] to-[#7ab89f] text-white font-semibold hover:from-[#7ab89f] hover:to-[#68a88d] hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                >
+                  + Nueva Cita
+                </button>
+              </div>
+            )}
 
       {/* Formulario Multi-Paso */}
       {showForm && (
@@ -520,66 +642,182 @@ export default function CitasPage() {
         </div>
       )}
 
-      {/* Lista de citas existentes */}
-      <div className="max-w-6xl mx-auto">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Citas Registradas</h2>
+            {/* Lista de citas existentes */}
+            <div>
+              <h2 className="text-lg font-bold text-gray-800 mb-5 flex items-center">
+                <div className="w-1 h-8 bg-gradient-to-b from-[#FF6B6B] via-[#8E7CC3] to-[#C9A8D4] rounded-full mr-3 shadow-md"></div>
+                <span className="bg-gradient-to-r from-[#FF6B6B] to-[#8E7CC3] bg-clip-text text-transparent">Citas Registradas</span>
+              </h2>
 
-        {loadingCitas && (
-          <div className="text-center py-8 text-gray-500">
-            ⏳ Cargando citas...
-          </div>
-        )}
+              {loadingCitas && (
+                <div className="text-center text-gray-500 py-8">Cargando citas...</div>
+              )}
 
-        {errorCitas && (
-          <div className="p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded">
-            {errorCitas}
-          </div>
-        )}
-
-        {!loadingCitas && citas.length === 0 && (
-          <div className="p-8 text-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-            <p className="text-gray-500 mb-4">No hay citas registradas aún</p>
-            <button
-              onClick={() => setShowForm(true)}
-              className="px-4 py-2 bg-[#C9A8D4] text-white rounded-lg hover:bg-[#A88FC9]"
-            >
-              Agendar Primera Cita
-            </button>
-          </div>
-        )}
-
-        {!loadingCitas && citas.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {citas.map((cita) => (
-              <div
-                key={cita.id_cita}
-                className="p-4 bg-white rounded-lg border-l-4 border-[#C9A8D4] shadow-md hover:shadow-lg transition-shadow"
-              >
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="font-bold text-[#C9A8D4]">{cita.paciente_nombre}</h3>
-                  <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                    cita.estado === 'pendiente'
-                      ? 'bg-yellow-100 text-yellow-700'
-                      : cita.estado === 'confirmada'
-                      ? 'bg-green-100 text-green-700'
-                      : cita.estado === 'cancelada'
-                      ? 'bg-red-100 text-red-700'
-                      : 'bg-blue-100 text-blue-700'
-                  }`}>
-                    {cita.estado}
-                  </span>
+              {errorCitas && (
+                <div className="mb-4 rounded-2xl border-2 border-red-300 bg-gradient-to-r from-red-50 to-rose-50 px-5 py-3.5 text-sm font-medium text-red-700 shadow-sm">
+                  {errorCitas}
                 </div>
+              )}
 
-                <div className="space-y-2 text-sm text-gray-600">
-                  <p><strong>Propietario:</strong> {cita.propietario_nombre}</p>
-                  <p><strong>Fecha:</strong> {new Date(cita.fecha_cita).toLocaleDateString('es-ES')}</p>
-                  <p><strong>Hora:</strong> {cita.hora_cita.substring(0, 5)}</p>
-                  <p><strong>Motivo:</strong> {cita.descripcion || 'Sin especificar'}</p>
+              {!loadingCitas && citas.length === 0 && (
+                <div className="text-center py-12 bg-gradient-to-br from-gray-50 to-white rounded-2xl border-2 border-dashed border-gray-300">
+                  <p className="text-gray-500 font-medium mb-4">No hay citas registradas aún</p>
+                  <button
+                    onClick={() => setShowForm(true)}
+                    className="px-4 py-2 bg-[#9BCDB0] text-white rounded-lg hover:bg-[#7ab89f] transition-colors"
+                  >
+                    Agendar Primera Cita
+                  </button>
                 </div>
-              </div>
-            ))}
+              )}
+
+              {!loadingCitas && citas.length > 0 && (
+                <div className="space-y-3">
+                  {citas.map((cita) => (
+                    <div key={cita.id_cita} className="group relative">
+                      <div className="relative bg-gradient-to-r from-white/80 via-[#FFF4E0]/30 to-white/80 backdrop-blur-sm rounded-xl border border-gray-200/60 shadow-md hover:shadow-xl hover:border-gray-300/80 transition-all duration-300 hover:scale-[1.01] overflow-hidden">
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#FF6B6B] via-[#9BCDB0] to-[#8E7CC3] group-hover:w-1.5 transition-all duration-300"></div>
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"></div>
+
+                        <div className="hidden md:flex relative items-center px-5 py-3 gap-4">
+                          <div className="flex-shrink-0">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#8E7CC3] to-[#C9A8D4] flex items-center justify-center shadow-md">
+                              <span className="text-lg">📅</span>
+                            </div>
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-bold text-[#9BCDB0] uppercase tracking-wide mb-0.5">Mascota</div>
+                            <div className="text-base font-extrabold text-gray-800 truncate group-hover:text-[#FF6B6B] transition-colors duration-300">{cita.paciente_nombre || 'Sin mascota'}</div>
+                          </div>
+
+                          <div className="w-px h-10 bg-gradient-to-b from-transparent via-gray-300 to-transparent"></div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-bold text-[#9BCDB0] uppercase tracking-wide mb-0.5">Propietario</div>
+                            <div className="text-base font-extrabold text-gray-800 truncate">{cita.propietario_nombre} {cita.propietario_apellido || ''}</div>
+                          </div>
+
+                          <div className="w-px h-10 bg-gradient-to-b from-transparent via-gray-300 to-transparent"></div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-bold text-[#9BCDB0] uppercase tracking-wide mb-0.5">Fecha / Hora</div>
+                            <div className="text-base font-extrabold text-gray-800">
+                              {new Date(cita.fecha_cita).toLocaleDateString('es-ES')} · {cita.hora_cita.substring(0, 5)}
+                            </div>
+                          </div>
+
+                          <div className="flex-shrink-0">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full border text-xs font-bold uppercase ${getEstadoStyles(cita.estado)}`}>
+                              {getEstadoLabel(cita.estado)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="md:hidden relative px-4 py-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="text-lg font-extrabold text-gray-800 truncate">{cita.paciente_nombre || 'Sin mascota'}</div>
+                              <div className="text-sm text-gray-600 truncate">{cita.propietario_nombre} {cita.propietario_apellido || ''}</div>
+                              <div className="text-sm text-gray-600 mt-1">{new Date(cita.fecha_cita).toLocaleDateString('es-ES')} · {cita.hora_cita.substring(0, 5)}</div>
+                            </div>
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase ${getEstadoStyles(cita.estado)}`}>
+                              {getEstadoLabel(cita.estado)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="px-5 pb-3 text-sm text-gray-600">
+                          <span className="font-semibold">Motivo: </span>
+                          {cita.descripcion || 'Sin especificar'}
+                        </div>
+
+                        {editingCita === cita.id_cita && (
+                          <div className="mx-5 mb-4 p-4 bg-white/90 rounded-xl border-2 border-[#C9A8D4] space-y-3">
+                            <h4 className="font-bold text-[#8E7CC3]">Editar cita</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">Fecha</label>
+                                <input
+                                  type="date"
+                                  min={fechaMinima}
+                                  value={editData.fecha_cita}
+                                  onChange={(e) => setEditData((prev) => ({ ...prev, fecha_cita: e.target.value }))}
+                                  className="w-full px-3 py-2 border-2 border-[#C9A8D4] rounded-lg focus:outline-none"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">Hora</label>
+                                <input
+                                  type="time"
+                                  value={editData.hora_cita}
+                                  onChange={(e) => setEditData((prev) => ({ ...prev, hora_cita: e.target.value }))}
+                                  className="w-full px-3 py-2 border-2 border-[#C9A8D4] rounded-lg focus:outline-none"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-gray-700 mb-1">Estado</label>
+                              <select
+                                value={editData.estado}
+                                onChange={(e) => setEditData((prev) => ({ ...prev, estado: e.target.value }))}
+                                className="w-full px-3 py-2 border-2 border-[#C9A8D4] rounded-lg focus:outline-none bg-white"
+                              >
+                                <option value="pendiente">Pendiente</option>
+                                <option value="confirmada">Confirmada</option>
+                                <option value="cancelada">Cancelada</option>
+                                <option value="realizada">Realizada</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-gray-700 mb-1">Descripción</label>
+                              <textarea
+                                rows="3"
+                                value={editData.descripcion}
+                                onChange={(e) => setEditData((prev) => ({ ...prev, descripcion: e.target.value }))}
+                                className="w-full px-3 py-2 border-2 border-[#C9A8D4] rounded-lg focus:outline-none resize-none"
+                              />
+                            </div>
+                            <div className="flex justify-end gap-2">
+                              <button
+                                onClick={cancelarEdicion}
+                                className="px-4 py-2 rounded-full bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300"
+                              >
+                                Cancelar
+                              </button>
+                              <button
+                                onClick={() => handleGuardarEdicion(cita.id_cita)}
+                                disabled={savingEdit}
+                                className="px-4 py-2 rounded-full bg-gradient-to-r from-[#8E7CC3] to-[#C9A8D4] text-white font-semibold hover:shadow-lg disabled:opacity-50"
+                              >
+                                {savingEdit ? 'Guardando...' : 'Guardar cambios'}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="px-5 pb-4 flex justify-end gap-2">
+                          <button
+                            onClick={() => abrirEdicion(cita)}
+                            className="px-4 py-2 rounded-full bg-gradient-to-r from-[#9BCDB0] to-[#7ab89f] text-white text-sm font-semibold hover:shadow-lg"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => handleEliminarCita(cita.id_cita)}
+                            className="px-4 py-2 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-semibold hover:shadow-lg"
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
