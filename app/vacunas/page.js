@@ -12,6 +12,7 @@ export default function VacunasPage() {
   const [pacientes, setPacientes] = useState([]);
   const [loadingPacientes, setLoadingPacientes] = useState(true);
   const [patientSearch, setPatientSearch] = useState('');
+  const [vacunaSearch, setVacunaSearch] = useState('');
   const [deletingId, setDeletingId] = useState(null);
   const [editingId, setEditingId] = useState(null);
 
@@ -189,6 +190,27 @@ export default function VacunasPage() {
     );
   });
 
+  const normalizeText = (text) =>
+    String(text || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+
+  const filteredVacunas = vacunas.filter((vacuna) => {
+    const query = normalizeText(vacunaSearch).trim();
+    if (!query) return true;
+
+    const nombreVacuna = normalizeText(vacuna?.nombre_vacuna || '');
+    const nombrePaciente = normalizeText(vacuna?.paciente_nombre || '');
+    const idMascota = normalizeText(vacuna?.pacientes_id_mascota || '');
+
+    return (
+      nombreVacuna.includes(query) ||
+      nombrePaciente.includes(query) ||
+      idMascota.includes(query)
+    );
+  });
+
   return (
     <div className="min-h-screen w-full p-6 sm:p-10 lg:p-16 font-sans bg-[#FFF9E6] paws-bg">
       <main className="max-w-6xl w-full mx-auto">
@@ -217,7 +239,7 @@ export default function VacunasPage() {
                     }}
                     className="inline-flex items-center px-4 py-2 rounded-full bg-[#9BCDB0] text-white font-semibold hover:bg-gradient-to-r hover:from-[#9BCDB0] hover:to-[#FF6B6B] transform hover:scale-110 hover:shadow-lg transition-transform duration-200 ease-in-out"
                   >
-                    Nueva vacuna
+                    +Nueva vacuna
                   </button>
                   <a href="/dashboard" className="inline-flex items-center px-4 py-2 rounded-full bg-[#C9A8D4] text-white font-semibold hover:bg-gradient-to-r hover:from-[#C9A8D4] hover:to-[#FF6B6B] transform hover:scale-110 hover:shadow-lg transition-transform duration-200 ease-in-out">
                     Volver al Dashboard
@@ -341,55 +363,91 @@ export default function VacunasPage() {
           )}
 
           <div className="mt-8">
-            <h3 className="text-lg font-semibold text-[#FF6B6B] border-b pb-2">Vacunas registradas</h3>
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 border-b pb-2">
+              <h3 className="text-lg font-semibold text-[#FF6B6B]">Vacunas registradas</h3>
+              <div className="w-full sm:w-72 sm:ml-auto">
+                <input
+                  type="text"
+                  value={vacunaSearch}
+                  onChange={(e) => setVacunaSearch(e.target.value)}
+                  placeholder="Buscar vacuna, paciente o ID..."
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#9BCDB0] focus:border-[#9BCDB0]"
+                />
+              </div>
+            </div>
 
             {loading ? (
               <div className="text-center text-sm text-gray-600 mt-4">Cargando vacunas...</div>
             ) : vacunas.length === 0 ? (
               <div className="text-center text-sm text-gray-600 mt-4">No hay vacunas registradas.</div>
+            ) : filteredVacunas.length === 0 ? (
+              <div className="text-center text-sm text-gray-600 mt-4">No hay resultados para la búsqueda.</div>
             ) : (
               <div className="mt-4 overflow-x-auto">
-                <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden">
-                  <thead className="bg-[#FFF2E5]">
-                    <tr>
-                      <th className="text-left text-xs font-semibold text-gray-700 px-4 py-3">Vacuna</th>
-                      <th className="text-left text-xs font-semibold text-gray-700 px-4 py-3">Fecha</th>
-                      <th className="text-left text-xs font-semibold text-gray-700 px-4 py-3">Proxima dosis</th>
-                      <th className="text-left text-xs font-semibold text-gray-700 px-4 py-3">Paciente</th>
-                      <th className="text-left text-xs font-semibold text-gray-700 px-4 py-3">ID Mascota</th>
-                      <th className="text-left text-xs font-semibold text-gray-700 px-4 py-3">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {vacunas.map((vacuna) => (
-                      <tr key={vacuna.id_vacunacion} className="border-t border-gray-200">
-                        <td className="px-4 py-3 text-sm text-gray-700">{vacuna.nombre_vacuna}</td>
-                        <td className="px-4 py-3 text-sm text-gray-700">{vacuna.fecha_aplicacion || '-'}</td>
-                        <td className="px-4 py-3 text-sm text-gray-700">{vacuna.proxima_dosis || '-'}</td>
-                        <td className="px-4 py-3 text-sm text-gray-700">{vacuna.paciente_nombre || 'Sin nombre'}</td>
-                        <td className="px-4 py-3 text-sm text-gray-700">{vacuna.pacientes_id_mascota}</td>
-                        <td className="px-4 py-3 text-sm text-gray-700">
-                          <div className="flex gap-3">
-                            <button
-                              onClick={() => handleEdit(vacuna)}
-                              className="text-[#9BCDB0] hover:text-green-700 font-bold text-lg transition-colors"
-                              title="Editar vacuna"
-                            >
-                              ✎
-                            </button>
-                            <button
-                              onClick={() => handleDelete(vacuna.id_vacunacion)}
-                              className="text-[#FF6B6B] hover:text-red-700 font-bold text-lg transition-colors"
-                              title="Eliminar vacuna"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        </td>
+                <div className="grid grid-cols-1 gap-4 sm:hidden">
+                  {filteredVacunas.map((vacuna) => (
+                    <div key={vacuna.id_vacunacion} className="bg-[#FFF2E5] rounded-xl shadow-md border border-[#FF6B6B] p-4 flex flex-col gap-2">
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold text-[#FF6B6B]">{vacuna.nombre_vacuna}</span>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEdit(vacuna)}
+                            className="text-[#9BCDB0] hover:text-green-700 font-bold text-lg transition-colors"
+                            title="Editar vacuna"
+                          >✎</button>
+                          <button
+                            onClick={() => handleDelete(vacuna.id_vacunacion)}
+                            className="text-[#FF6B6B] hover:text-red-700 font-bold text-lg transition-colors"
+                            title="Eliminar vacuna"
+                          >✕</button>
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-700"><span className="font-semibold">Fecha:</span> {vacuna.fecha_aplicacion || '-'}</div>
+                      <div className="text-sm text-gray-700"><span className="font-semibold">Próxima dosis:</span> {vacuna.proxima_dosis || '-'}</div>
+                      <div className="text-sm text-gray-700"><span className="font-semibold">Paciente:</span> {vacuna.paciente_nombre || 'Sin nombre'}</div>
+                      <div className="text-sm text-gray-700"><span className="font-semibold">ID Mascota:</span> {vacuna.pacientes_id_mascota}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="hidden sm:block">
+                  <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden">
+                    <thead className="bg-[#FFF2E5]">
+                      <tr>
+                        <th className="text-left text-xs font-semibold text-gray-700 px-4 py-3">Vacuna</th>
+                        <th className="text-left text-xs font-semibold text-gray-700 px-4 py-3">Fecha</th>
+                        <th className="text-left text-xs font-semibold text-gray-700 px-4 py-3">Proxima dosis</th>
+                        <th className="text-left text-xs font-semibold text-gray-700 px-4 py-3">Paciente</th>
+                        <th className="text-left text-xs font-semibold text-gray-700 px-4 py-3">ID Mascota</th>
+                        <th className="text-left text-xs font-semibold text-gray-700 px-4 py-3">Acciones</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {filteredVacunas.map((vacuna) => (
+                        <tr key={vacuna.id_vacunacion} className="border-t border-gray-200">
+                          <td className="px-4 py-3 text-sm text-gray-700">{vacuna.nombre_vacuna}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">{vacuna.fecha_aplicacion || '-'}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">{vacuna.proxima_dosis || '-'}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">{vacuna.paciente_nombre || 'Sin nombre'}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">{vacuna.pacientes_id_mascota}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">
+                            <div className="flex gap-3">
+                              <button
+                                onClick={() => handleEdit(vacuna)}
+                                className="text-[#9BCDB0] hover:text-green-700 font-bold text-lg transition-colors"
+                                title="Editar vacuna"
+                              >✎</button>
+                              <button
+                                onClick={() => handleDelete(vacuna.id_vacunacion)}
+                                className="text-[#FF6B6B] hover:text-red-700 font-bold text-lg transition-colors"
+                                title="Eliminar vacuna"
+                              >✕</button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>

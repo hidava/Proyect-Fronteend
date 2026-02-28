@@ -8,7 +8,7 @@ export async function GET(request, { params }) {
       return NextResponse.json({ success: false, error: 'EXTERNAL_API_BASE no configurado' }, { status: 400 });
     }
 
-    const { id } = await params;
+    const { id } = params;
     const apiUrl = `${EXTERNAL_API}/pacientes/${id}`;
 
     const res = await fetch(apiUrl, {
@@ -32,7 +32,7 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ success: false, error: 'EXTERNAL_API_BASE no configurado' }, { status: 400 });
     }
 
-    const { id } = await params;
+    const { id } = params;
     const body = await request.json();
     const apiUrl = `${EXTERNAL_API}/pacientes/${id}`;
 
@@ -58,7 +58,7 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ success: false, error: 'EXTERNAL_API_BASE no configurado' }, { status: 400 });
     }
 
-    const { id } = await params;
+    const { id } = params;
     const apiUrl = `${EXTERNAL_API}/pacientes/${id}`;
 
     const res = await fetch(apiUrl, {

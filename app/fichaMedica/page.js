@@ -20,8 +20,23 @@ export default function FichaMedica() {
   const [editMode, setEditMode] = useState(false);
   const [editedFicha, setEditedFicha] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [busquedaFicha, setBusquedaFicha] = useState('');
   const isSuccessMessage = message && message.toLowerCase().includes('correctamente');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const normalizarTexto = (texto) =>
+    String(texto || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+
+  const fichasFiltradas = fichas.filter((ficha) => {
+    const termino = normalizarTexto(busquedaFicha).trim();
+    if (!termino) return true;
+
+    const nombreMascota = normalizarTexto(ficha.nombre_mascota || '');
+    return nombreMascota.includes(termino);
+  });
 
   function closeForm() {
     setShowForm(false);
@@ -178,7 +193,8 @@ export default function FichaMedica() {
 
   return (
     <div className="min-h-screen p-6 sm:p-10 lg:p-16">
-      <div className="max-w-4xl mx-auto bg-[#F8F7F5] rounded-3xl p-12 shadow-2xl border-b-8 border-[#C9A8D4]">
+      <div className="max-w-4xl mx-auto rounded-3xl p-[2px] bg-gradient-to-r from-slate-300 via-zinc-400 to-slate-300 shadow-2xl">
+        <div className="bg-[#F8F7F5] rounded-[22px] p-12">
         <header className="mb-6 flex flex-col sm:flex-row items-center justify-between">
           <div className="flex items-center">
             <svg className="w-8 h-8 mr-3 text-[#C9A8D4] shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -190,34 +206,56 @@ export default function FichaMedica() {
             </div>
           </div>
 
-          <div className="mt-4 sm:mt-0">
+          <div className="mt-4 sm:mt-0 flex flex-col items-end gap-2">
             <a href="/dashboard" className="inline-flex items-center px-4 py-2 rounded-full bg-[#C9A8D4] text-white font-semibold hover:bg-gradient-to-r hover:from-[#C9A8D4] hover:to-[#FF6B6B] transform hover:scale-105 hover:shadow-lg transition-transform duration-200 ease-in-out">Volver al Dashboard</a>
+
+            <div className="w-full sm:w-56">
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Buscar ficha</label>
+              <input
+                type="text"
+                value={busquedaFicha}
+                onChange={(e) => setBusquedaFicha(e.target.value)}
+                placeholder="Ej: Pepe"
+                className="w-full px-3 py-1.5 text-sm border-2 border-[#C9A8D4] rounded-lg focus:outline-none focus:border-[#A88FC9]"
+              />
+            </div>
           </div>
         </header>
 
-        {/* Grid de mini-cuadrados */}
-        <div className="grid grid-cols-4 gap-6 mb-6">
+        {/* Grid/Lista de fichas */}
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-6 mb-6">
           {/* Botón para añadir nueva ficha */}
-          <div role="button" aria-label="Agregar ficha" className="h-32 bg-gradient-to-br from-[#FF6B6B]/15 to-[#FFD4D4] rounded-lg border-2 border-dashed border-[#FF6B6B] flex items-center justify-center cursor-pointer hover:from-[#FF6B6B]/25 hover:to-[#FFC4C4] transition" onClick={() => { setMessage(''); setShowForm(true); }}>
-            <div className="text-5xl text-[#FF6B6B] font-extrabold">+</div>
+          <div role="button" aria-label="Agregar ficha" className="h-20 sm:h-32 rounded-xl p-[1.5px] bg-[#F6EFD7] cursor-pointer shadow-sm" onClick={() => { setMessage(''); setShowForm(true); }}>
+            <div className="h-full rounded-[11px] bg-gradient-to-r from-white/80 via-[#FFF4E0]/30 to-white/80 flex items-center justify-center transition">
+              <div className="text-5xl text-[#FF6B6B] font-extrabold">+</div>
+            </div>
           </div>
 
           {/* Mostrar fichas guardadas (nombre del paciente) */}
           {loadingFichas ? (
             <div className="col-span-4 text-sm text-gray-500">Cargando fichas...</div>
+          ) : fichasFiltradas.length === 0 ? (
+            <div className="col-span-4 text-sm text-gray-500">No se encontraron fichas para esa búsqueda</div>
           ) : (
-            fichas.map((f, idx) => (
-              <div key={idx} className="h-32 bg-gradient-to-br from-[#9BCDB0]/20 to-[#E8F5F0] rounded-xl border-2 border-[#9BCDB0] p-3 flex flex-col items-center justify-center text-center shadow-md hover:from-[#9BCDB0]/30 hover:to-[#D4EEEA] transition cursor-pointer" onClick={() => { setSelectedFicha(f); setShowHistorialModal(true); }}>
-                <div className="text-xs text-[#9BCDB0]">Ficha</div>
-                <div className="mt-2 inline-flex items-center px-3 py-1 rounded-full bg-[#FF6B6B] text-white font-semibold text-sm">
-                  {f.nombre_mascota || 'Sin nombre'}
+            fichasFiltradas.map((f, idx) => (
+              <div key={idx} className="h-auto sm:h-32 min-h-[84px] rounded-xl p-[1.5px] bg-[#F6EFD7] shadow-sm hover:shadow-md transition cursor-pointer" onClick={() => { setSelectedFicha(f); setShowHistorialModal(true); }}>
+                <div className="h-full rounded-[11px] bg-[#FFF9E6] hover:bg-[#FFF4E0] p-3 flex flex-row sm:flex-col items-center sm:justify-center justify-between text-left sm:text-center transition gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs text-[#9BCDB0] tracking-wide">Ficha</div>
+                    <div className="mt-1 inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-br from-[#8E7CC3] to-[#C9A8D4] text-white font-semibold text-sm shadow-sm">
+                      {f.nombre_mascota || 'Sin nombre'}
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-500 max-w-[180px] sm:max-w-[160px] truncate">
+                    {f.motivo_consulta || ''}
+                  </div>
                 </div>
-                <div className="mt-2 text-xs text-gray-500 max-w-[160px] truncate">{f.motivo_consulta || ''}</div>
               </div>
             ))
           )}
         </div>
 
+      </div>
       </div>
 
       {/* Modal del formulario */}

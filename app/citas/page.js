@@ -475,17 +475,29 @@ export default function CitasPage() {
               </div>
             )}
 
-            {/* Botón Nueva Cita */}
-            {!showForm && (
-              <div className="mb-6">
-                <button
-                  onClick={() => setShowForm(true)}
-                  className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#9BCDB0] to-[#7ab89f] text-white font-semibold hover:from-[#7ab89f] hover:to-[#68a88d] hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                >
-                  + Nueva Cita
-                </button>
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+              <div>
+                {!showForm && (
+                  <button
+                    onClick={() => setShowForm(true)}
+                    className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#9BCDB0] to-[#7ab89f] text-white font-semibold hover:from-[#7ab89f] hover:to-[#68a88d] hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  >
+                    + Nueva Cita
+                  </button>
+                )}
               </div>
-            )}
+
+              <div className="w-full sm:max-w-md sm:ml-auto">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Buscar por propietario</label>
+                <input
+                  type="text"
+                  value={busquedaPropietario}
+                  onChange={(e) => setBusquedaPropietario(e.target.value)}
+                  placeholder="Ej: Nathaly"
+                  className="w-full px-4 py-2 border-2 border-[#C9A8D4] rounded-xl focus:outline-none focus:border-[#A88FC9]"
+                />
+              </div>
+            </div>
 
       {/* Formulario Multi-Paso */}
       {showForm && (
@@ -750,17 +762,6 @@ export default function CitasPage() {
                 <div className="w-1 h-8 bg-gradient-to-b from-[#FF6B6B] via-[#8E7CC3] to-[#C9A8D4] rounded-full mr-3 shadow-md"></div>
                 <span className="bg-gradient-to-r from-[#FF6B6B] to-[#8E7CC3] bg-clip-text text-transparent">Citas Registradas</span>
               </h2>
-
-              <div className="mb-4">
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Buscar por propietario</label>
-                <input
-                  type="text"
-                  value={busquedaPropietario}
-                  onChange={(e) => setBusquedaPropietario(e.target.value)}
-                  placeholder="Ej: Nathaly"
-                  className="w-full sm:max-w-md px-4 py-2 border-2 border-[#C9A8D4] rounded-xl focus:outline-none focus:border-[#A88FC9]"
-                />
-              </div>
 
               {loadingCitas && (
                 <div className="text-center text-gray-500 py-8">Cargando citas...</div>
